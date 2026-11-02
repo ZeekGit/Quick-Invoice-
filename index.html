@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickInvoice Studio - Professional Invoicing System</title>
+  <meta name="theme-color" content="#09090b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="QuickInvoice">
+  <link rel="manifest" id="manifest-link">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <!-- QR Code Library for Dynamic In-Browser QR Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- html2pdf Library for Direct 1-Click Vector PDF Download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes rowSlide {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseScale {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); color: #000; }
+      100% { transform: scale(1); }
+    }
+    @keyframes modalSlide {
+      from { opacity: 0; transform: scale(0.96) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes toastEnter {
+      from { opacity: 0; transform: translateY(12px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .anim-fade { animation: fadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .anim-row { animation: rowSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .anim-pulse { animation: pulseScale 0.2s ease-out; }
+    .anim-modal { animation: modalSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .anim-toast { animation: toastEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #d4d4d8; }
+
+    /* Tabular numbers for financials */
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    /* Clean print stylesheet: transforms editor into high-end printed document */
+    @media print {
+      body {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: #000000 !important;
+      }
+      .no-print, header, nav, #toast-container, #modal-backdrop, #pro-modal-backdrop, .action-tools {
+        display: none !important;
+      }
+      .print-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      .invoice-card {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 24px 32px !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+      }
+      input, textarea, select {
+        border-color: transparent !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        resize: none !important;
+      }
+      .remove-btn-col {
+        display: none !important;
+      }
+      .watermark-free-hidden {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-zinc-100/70 text-zinc-900 min-h-screen py-4 sm:py-8 px-2 sm:px-6 font-sans antialiased selection:bg-zinc-900 selection:text-white">
+
+  <!-- Toast Notification Portal -->
+  <div id="toast-container" class="no-print fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Reusable Confirmation Modal Dialog -->
+  <div id="modal-backdrop" class="no-print fixed inset-0 z-50 bg-zinc-950/40 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div id="modal-box" class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-zinc-200/80 anim-modal">
+      <h3 id="modal-title" class="text-base font-semibold text-zinc-900">Confirm Action</h3>
+      <p id="modal-msg" class="text-xs text-zinc-500 mt-2 leading-relaxed">Are you sure you want to proceed?</p>
+      <div class="mt-6 flex justify-end gap-2">
+        <button id="modal-cancel-btn" type="button" class="px-3.5 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button id="modal-confirm-btn" type="button" class="px-3.5 py-1.5 text-xs font-medium text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg shadow-sm transition-all active:scale-95">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monetization & Pro Upgrade Modal -->
+  <div id="pro-modal-backdrop" class="no-print fixed inset-0 z-50 bg-zinc-950/50 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-zinc-200 anim-modal space-y-4">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-zinc-950 text-white font-mono font-bold text-xs flex items-center justify-center">PRO</span>
+          <div>
+            <h3 class="text-base font-bold text-zinc-900">Upgrade to QuickInvoice Pro</h3>
+            <p class="text-xs text-zinc-500">Commercial License & Full Whitelabel Suite</p>
+          </div>
+        </div>
+        <button id="close-pro-modal-btn" type="button" class="text-zinc-400 hover:text-zinc-700 text-sm p-1">✕</button>
+      </div>
+
+      <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-100 space-y-2 text-xs">
+        <div class="flex items-center gap-2 text-zinc-800 font-medium">
+          <span class="text-emerald-600">✓</span>
+          <span>100% Whitelabel: Remove all "QuickInvoice" footer watermarks</span>
+        </div>
+        <div class="flex items-center gap-2 text-zinc-800 font-medium">
+          <span class="text-emerald-600">✓</span>
+          <span>Custom Brand Accent Themes (Indigo, Emerald, Amber, Slate)</span>
+        </div>
+        <div class="flex items-center gap-2 text-zinc-800 font-medium">
+          <span class="text-emerald-600">✓</span>
+          <span>One-Click GST (18%, 12%) and International VAT Presets</span>
+        </div>
+        <div class="flex items-center gap-2 text-zinc-800 font-medium">
+          <span class="text-emerald-600">✓</span>
+          <span>Unlimited Cloud & Local Invoice Directory</span>
+        </div>
+      </div>
+
+      <div class="space-y-3 pt-2">
+        <label for="pro-license-input" class="block text-xs font-mono text-zinc-500 uppercase">Have a License Key?</label>
+        <div class="flex gap-2">
+          <input type="text" id="pro-license-input" placeholder="e.g. FOUNDER2026 or PRO-KEY" class="flex-1 text-xs font-mono px-3 py-2 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-900">
+          <button id="activate-license-btn" type="button" class="px-4 py-2 text-xs font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all active:scale-95">
+            Activate
+          </button>
+        </div>
+        <p class="text-[11px] text-zinc-400 font-mono">Tip: Use demo key <code class="bg-zinc-100 text-zinc-800 px-1 py-0.5 rounded">FOUNDER2026</code> to test instant activation.</p>
+      </div>
+
+      <div class="pt-3 border-t border-zinc-100 flex items-center justify-between">
+        <div>
+          <span class="text-sm font-bold text-zinc-900">$19</span>
+          <span class="text-xs text-zinc-400 font-mono"> / Lifetime License</span>
+        </div>
+        <button id="instant-buy-btn" type="button" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-all active:scale-95">
+          Simulate Purchase & Unlock
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Wrapper -->
+  <div class="max-w-4xl mx-auto space-y-4 print-container">
+
+    <!-- Top Navigation / Application Shell (Hidden in print) -->
+    <header class="no-print bg-white rounded-2xl border border-zinc-200/80 p-3 sm:p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-zinc-950 text-white font-mono font-bold text-sm flex items-center justify-center tracking-tighter shadow-sm transition-transform hover:scale-105">
+            QI
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-sm font-semibold tracking-tight text-zinc-900">QuickInvoice Studio</h1>
+              <!-- Pro Status Badge / Upgrade Trigger -->
+              <button id="pro-badge-btn" type="button" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-semibold flex items-center gap-1 transition-colors">
+                <span id="pro-badge-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                <span id="pro-badge-text">Free Tier &bull; Upgrade</span>
+              </button>
+            </div>
+            <p class="text-[11px] text-zinc-400 font-mono flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Auto-saved &bull; Client Database
+            </p>
+          </div>
+        </div>
+
+        <!-- Mobile New Button -->
+        <button id="mobile-new-btn" type="button" class="md:hidden px-3 py-1.5 text-xs font-medium text-white bg-zinc-900 rounded-lg flex items-center gap-1">
+          + New
+        </button>
+      </div>
+
+      <!-- Tab Navigation Switcher -->
+      <nav class="flex items-center justify-center bg-zinc-100/80 p-1 rounded-xl self-center border border-zinc-200/50">
+        <button id="tab-editor-btn" type="button" class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 bg-white text-zinc-900 shadow-xs">
+          Invoice Editor
+        </button>
+        <button id="tab-dashboard-btn" type="button" class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 text-zinc-500 hover:text-zinc-900">
+          History (<span id="invoices-count-badge">1</span>)
+        </button>
+        <button id="tab-clients-btn" type="button" class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 text-zinc-500 hover:text-zinc-900">
+          Client Book (<span id="clients-count-badge">2</span>)
+        </button>
+      </nav>
+
+      <!-- Global Actions -->
+      <div class="flex items-center gap-2 justify-end flex-wrap sm:flex-nowrap">
+        <!-- Currency Dropdown -->
+        <div class="relative">
+          <label for="currency-select" class="sr-only">Currency</label>
+          <select id="currency-select" class="text-xs font-mono font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200/80 border-0 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all cursor-pointer">
+            <option value="INR">INR (₹)</option>
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="CAD">CAD ($)</option>
+            <option value="AUD">AUD ($)</option>
+            <option value="JPY">JPY (¥)</option>
+          </select>
+        </div>
+
+        <!-- PWA Install Button -->
+        <button id="install-pwa-btn" type="button" class="px-2.5 py-1.5 text-xs font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded-lg transition-all active:scale-95 flex items-center gap-1.5 shadow-2xs">
+          <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span id="install-pwa-text">Install App</span>
+        </button>
+
+        <!-- Reset Button -->
+        <button id="reset-btn" type="button" class="px-3 py-1.5 text-xs font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-all active:scale-95">
+          Reset
+        </button>
+
+        <!-- New Invoice Button -->
+        <button id="new-invoice-btn" type="button" class="hidden md:inline-flex px-3 py-1.5 text-xs font-medium text-zinc-800 bg-zinc-100 hover:bg-zinc-200/80 rounded-lg transition-all active:scale-95 items-center gap-1">
+          + New
+        </button>
+
+        <!-- Direct 1-Click PDF Download Button -->
+        <button id="download-pdf-btn" type="button" class="px-3.5 py-1.5 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span id="download-pdf-label">Download PDF</span>
+        </button>
+
+        <!-- Print / PDF Export Button -->
+        <button id="print-btn" type="button" class="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg shadow-xs transition-all duration-150 active:scale-95 flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          <span>Print / Save as PDF</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- VIEW 1: INVOICE EDITOR -->
+    <div id="view-editor" class="space-y-4">
+
+      <!-- Editor Quick Tools Bar -->
+      <div class="no-print bg-white/70 backdrop-blur-xs rounded-xl border border-zinc-200/70 p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[11px] font-mono uppercase text-zinc-400 font-medium">Quick Presets:</span>
+          <button type="button" class="quick-preset-btn px-2.5 py-1 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition-colors" data-desc="UI/UX Product Design & Prototyping" data-rate="1200" data-qty="1">
+            + Design Prototype ($1,200)
+          </button>
+          <button type="button" class="quick-preset-btn px-2.5 py-1 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition-colors" data-desc="Full-Stack Web Engineering Sprint" data-rate="85" data-qty="20">
+            + Engineering Sprint (20h @ $85)
+          </button>
+          <button type="button" class="quick-preset-btn px-2.5 py-1 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition-colors" data-desc="Monthly Cloud Maintenance Retainer" data-rate="750" data-qty="1">
+            + Monthly Retainer ($750)
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 ml-auto">
+          <!-- Status Selector -->
+          <label for="invoice-status" class="text-[11px] font-mono text-zinc-400">Status:</label>
+          <select id="invoice-status" class="font-mono text-xs font-semibold rounded-lg px-2 py-1 border border-zinc-200 bg-white focus:outline-none focus:border-zinc-900 cursor-pointer">
+            <option value="DRAFT">Draft</option>
+            <option value="SENT" selected>Sent</option>
+            <option value="PAID">Paid</option>
+            <option value="OVERDUE">Overdue</option>
+          </select>
+
+          <!-- Duplicate / Clone -->
+          <button id="duplicate-invoice-btn" type="button" class="px-2.5 py-1 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors" title="Clone as new invoice">
+            Duplicate
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Invoice Sheet (Target for PDF Generation) -->
+      <main id="invoice-printable-area" class="invoice-card bg-white rounded-2xl shadow-sm border border-zinc-200/80 p-6 sm:p-12 anim-fade transition-all space-y-8">
+
+        <!-- Top Header: Business Branding & Invoice Meta -->
+        <div class="flex flex-col sm:flex-row justify-between items-start gap-6 pb-8 border-b border-zinc-100">
+          <div class="space-y-4 max-w-sm w-full">
+            
+            <!-- Logo Section -->
+            <div class="flex items-center gap-3">
+              <div class="no-print">
+                <label class="cursor-pointer group flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-zinc-900 transition-colors">
+                  <span class="w-8 h-8 rounded-lg border border-dashed border-zinc-300 group-hover:border-zinc-900 flex items-center justify-center text-zinc-400 group-hover:text-zinc-900 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </span>
+                  <span id="logo-text">Add Logo</span>
+                  <input type="file" id="logo-input" accept="image/*" class="hidden">
+                </label>
+              </div>
+
+              <div id="logo-preview-container" class="hidden flex items-center gap-2">
+                <img id="logo-preview" src="" alt="Brand Logo" class="max-h-12 max-w-44 object-contain rounded">
+                <button id="remove-logo-btn" type="button" class="no-print text-[11px] font-mono text-rose-500 hover:text-rose-700 transition-colors">
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <!-- Business Information -->
+            <div class="space-y-1">
+              <label for="seller-name" class="sr-only">Your Business</label>
+              <input type="text" id="seller-name" value="Studio Minimal India LLP" class="block font-semibold text-zinc-900 text-lg border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Your Business / Name">
+              
+              <label for="seller-email" class="sr-only">Your Email / Contact</label>
+              <input type="text" id="seller-email" value="billing@studiominimal.in" class="block text-xs text-zinc-500 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Email / Phone">
+              
+              <label for="seller-address" class="sr-only">Your Address / Tax ID</label>
+              <input type="text" id="seller-address" value="Indiranagar, 100 Feet Rd, Bengaluru 560038 &bull; GSTIN: 29AAAAA0000A1Z5" class="block text-xs text-zinc-400 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Address &bull; GSTIN / Tax ID">
+            </div>
+          </div>
+
+          <!-- Invoice Metadata -->
+          <div class="sm:text-right w-full sm:w-auto space-y-2">
+            <div class="flex items-center sm:justify-end gap-2">
+              <span id="status-pill" class="inline-flex items-center gap-1.5 text-[11px] font-mono tracking-widest uppercase px-2 py-0.5 rounded bg-zinc-100 text-zinc-800 font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="status-text">SENT</span>
+              </span>
+            </div>
+
+            <div class="space-y-1 text-xs">
+              <div class="flex items-center sm:justify-end gap-2">
+                <span class="text-[11px] font-mono text-zinc-400 w-24 sm:w-auto">INVOICE NO.</span>
+                <input type="text" id="invoice-number" value="INV-001" class="font-mono text-xs font-semibold text-zinc-800 text-left sm:text-right w-24 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none transition-colors bg-transparent">
+              </div>
+
+              <div class="flex items-center sm:justify-end gap-2">
+                <span class="text-[11px] font-mono text-zinc-400 w-24 sm:w-auto">ISSUE DATE</span>
+                <input type="date" id="invoice-date" class="font-mono text-xs text-zinc-600 text-left sm:text-right border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none transition-colors bg-transparent">
+              </div>
+
+              <div class="flex items-center sm:justify-end gap-2">
+                <span class="text-[11px] font-mono text-zinc-400 w-24 sm:w-auto">DUE DATE</span>
+                <input type="date" id="invoice-due-date" class="font-mono text-xs text-zinc-600 text-left sm:text-right border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none transition-colors bg-transparent">
+              </div>
+            </div>
+
+            <!-- Due Date Quick Setters -->
+            <div class="no-print flex items-center justify-start sm:justify-end gap-1 pt-1">
+              <button type="button" class="due-preset-btn text-[10px] font-mono text-zinc-400 hover:text-zinc-900 px-1.5 py-0.5 rounded hover:bg-zinc-100" data-days="0">Due Now</button>
+              <button type="button" class="due-preset-btn text-[10px] font-mono text-zinc-400 hover:text-zinc-900 px-1.5 py-0.5 rounded hover:bg-zinc-100" data-days="14">Net 14</button>
+              <button type="button" class="due-preset-btn text-[10px] font-mono text-zinc-400 hover:text-zinc-900 px-1.5 py-0.5 rounded hover:bg-zinc-100" data-days="30">Net 30</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bill To (Client Details) -->
+        <div class="pb-6 border-b border-zinc-100 flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div class="max-w-sm w-full space-y-1">
+            <div class="flex items-center justify-between">
+              <label for="client-name" class="block text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-1">Billed To (Client)</label>
+              <!-- Client Picker Shortcut -->
+              <button id="save-current-client-btn" type="button" class="no-print text-[10px] font-mono text-zinc-400 hover:text-zinc-900 transition-colors">
+                + Save to Directory
+              </button>
+            </div>
+            
+            <input type="text" id="client-name" value="Kanso Technologies Pvt Ltd" class="block font-medium text-sm text-zinc-900 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Client Name or Company">
+            
+            <label for="client-email" class="sr-only">Client Email</label>
+            <input type="text" id="client-email" value="finance@kansotech.in" class="block text-xs text-zinc-500 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Client Email / Contact">
+            
+            <label for="client-address" class="sr-only">Client Address</label>
+            <input type="text" id="client-address" value="Koramangala 4th Block, Bengaluru, Karnataka &bull; GSTIN: 29BBBBB1111B1Z2" class="block text-xs text-zinc-400 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Client Address &bull; GSTIN">
+          </div>
+
+          <!-- Quick Client Dropdown Selector -->
+          <div class="no-print self-start bg-zinc-50 border border-zinc-200/70 p-2.5 rounded-xl text-xs space-y-1">
+            <label for="client-quick-select" class="block text-[10px] font-mono uppercase text-zinc-400">Load Client:</label>
+            <select id="client-quick-select" class="w-44 text-xs font-medium text-zinc-700 bg-white border border-zinc-200 rounded-lg p-1.5 focus:outline-none focus:border-zinc-900 cursor-pointer">
+              <option value="">Select from directory...</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Line Items Table -->
+        <div class="space-y-4">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 border-b border-zinc-100">
+                  <th class="pb-3 font-normal w-1/2">Description</th>
+                  <th class="pb-3 font-normal text-right">Qty</th>
+                  <th class="pb-3 font-normal text-right">Rate</th>
+                  <th class="pb-3 font-normal text-right">Amount</th>
+                  <th class="pb-3 text-right w-10 no-print remove-btn-col"></th>
+                </tr>
+              </thead>
+              <tbody id="line-items" class="divide-y divide-zinc-50">
+                <!-- Dynamically generated rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Add Line Item Action -->
+          <div class="no-print pt-2 flex items-center justify-between">
+            <button id="add-item-btn" type="button" class="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 px-3 py-1.5 rounded-lg transition-all active:scale-95 border border-dashed border-zinc-300 hover:border-zinc-500">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Add Line Item</span>
+            </button>
+            <span class="text-[11px] font-mono text-zinc-400" id="item-count-label">2 items</span>
+          </div>
+        </div>
+
+        <!-- Totals & Payment Instructions -->
+        <div class="border-t border-zinc-100 pt-8 flex flex-col sm:flex-row justify-between items-start gap-8">
+          
+          <!-- Payment Terms, Bank Details & Dynamic Live QR Code -->
+          <div class="text-xs text-zinc-500 max-w-sm w-full space-y-4">
+            <div>
+              <label for="payment-terms" class="block font-medium text-zinc-700 text-[11px] font-mono uppercase tracking-wider mb-1">Payment Instructions & Terms</label>
+              <textarea id="payment-terms" rows="2" class="w-full text-xs text-zinc-600 border border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none rounded-lg p-2 transition-colors bg-zinc-50/50 resize-none" placeholder="Payment terms...">Payment due within 14 days of invoice date. UPI, IMPS, or NEFT accepted.</textarea>
+            </div>
+            
+            <div>
+              <label for="bank-details" class="block font-medium text-zinc-700 text-[11px] font-mono uppercase tracking-wider mb-1">Bank Account / IFSC / SWIFT</label>
+              <input type="text" id="bank-details" value="HDFC Bank &bull; A/C: 50200012345678 &bull; IFSC: HDFC0000140" class="w-full text-[11px] font-mono text-zinc-500 border border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none rounded-lg p-1.5 transition-colors bg-zinc-50/50" placeholder="Bank Name / Account # / IFSC / SWIFT">
+            </div>
+
+            <!-- Dynamic Live QR Payment Block (Real Scannable QR Code!) -->
+            <div class="p-3.5 bg-zinc-50/80 rounded-xl border border-zinc-200/70 flex items-center gap-3.5">
+              <!-- Live Generated QR Code Container -->
+              <div id="dynamic-qr-box" class="w-20 h-20 bg-white p-1 rounded-lg border border-zinc-200 shrink-0 flex items-center justify-center overflow-hidden">
+                <div id="qr-output" class="w-full h-full flex items-center justify-center"></div>
+              </div>
+
+              <div class="text-[11px] space-y-0.5 flex-1 min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-mono uppercase font-bold text-zinc-900 block tracking-tight">Live Payment QR</span>
+                  <span class="text-[9px] font-mono uppercase px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 font-semibold">Active</span>
+                </div>
+                <p class="text-zinc-500 text-[10px] leading-tight" id="qr-instructions-text">Scan with any UPI app (GPay, PhonePe, Paytm) to pay exact amount.</p>
+                
+                <div class="no-print pt-1 flex items-center gap-1.5">
+                  <label for="pay-handle-input" class="sr-only">UPI ID / PayPal Link</label>
+                  <input type="text" id="pay-handle-input" value="alex@okaxis" class="text-[10px] font-mono px-2 py-0.5 bg-white border border-zinc-200 rounded text-zinc-700 focus:outline-none focus:border-zinc-900 w-32" placeholder="UPI ID / PayPal handle">
+                  <button id="copy-paylink-btn" type="button" class="text-[10px] font-mono px-1.5 py-0.5 text-zinc-600 hover:text-zinc-900 bg-zinc-200/70 hover:bg-zinc-200 rounded transition-colors whitespace-nowrap" title="Copy raw payment intent URI">
+                    Copy URI
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Financial Calculation Breakdown -->
+          <div class="w-full sm:w-64 space-y-2.5 text-xs bg-zinc-50/70 p-4 rounded-xl border border-zinc-200/60">
+            <!-- Subtotal -->
+            <div class="flex justify-between text-zinc-600">
+              <span>Subtotal</span>
+              <span class="font-mono text-zinc-900 tabular-nums font-medium" id="subtotal-display">₹0.00</span>
+            </div>
+
+            <!-- Discount Input -->
+            <div class="flex justify-between items-center text-zinc-600">
+              <span class="flex items-center gap-1">
+                <span>Discount (</span>
+                <label for="discount-rate" class="sr-only">Discount percentage</label>
+                <input type="number" id="discount-rate" value="0" min="0" max="100" class="w-10 text-center font-mono text-xs border border-zinc-200 bg-white rounded px-1 py-0.5 focus:border-zinc-900 focus:outline-none transition-all">
+                <span>%)</span>
+              </span>
+              <span class="font-mono text-zinc-700 tabular-nums" id="discount-display">-₹0.00</span>
+            </div>
+
+            <!-- Tax Rate Input with One-Click GST / Tax Presets -->
+            <div class="space-y-1">
+              <div class="flex justify-between items-center text-zinc-600">
+                <span class="flex items-center gap-1">
+                  <span id="tax-label-text">GST / Tax (</span>
+                  <label for="tax-rate" class="sr-only">Tax percentage</label>
+                  <input type="number" id="tax-rate" value="18" min="0" max="100" class="w-10 text-center font-mono text-xs border border-zinc-200 bg-white rounded px-1 py-0.5 focus:border-zinc-900 focus:outline-none transition-all">
+                  <span>%)</span>
+                </span>
+                <span class="font-mono text-zinc-700 tabular-nums" id="tax-display">₹0.00</span>
+              </div>
+              <!-- One-click tax presets -->
+              <div class="no-print flex items-center justify-end gap-1 pt-0.5">
+                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1 py-0.2 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="18">18% GST</button>
+                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1 py-0.2 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="12">12%</button>
+                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1 py-0.2 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="0">0%</button>
+              </div>
+            </div>
+
+            <!-- Grand Total Due -->
+            <div class="flex justify-between text-sm font-semibold text-zinc-900 border-t border-zinc-200/80 pt-3">
+              <span>Total Due</span>
+              <span class="font-mono text-zinc-950 tabular-nums transition-transform inline-block" id="total-display">₹0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Notice & Pro-Tier Watermark -->
+        <footer class="pt-6 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-zinc-400">
+          <div>
+            <!-- Free Watermark (Hidden when Pro is active) -->
+            <span id="free-watermark-tag" class="text-zinc-500">
+              Generated with QuickInvoice Free &bull; <button id="watermark-upgrade-btn" type="button" class="no-print text-indigo-600 hover:underline font-medium">Remove Watermark</button>
+            </span>
+            <span id="pro-watermark-tag" class="hidden text-zinc-700 font-semibold">
+              QuickInvoice Studio &bull; Verified Client Copy
+            </span>
+          </div>
+          <div class="no-print flex items-center gap-3">
+            <button id="export-json-btn" type="button" class="text-zinc-500 hover:text-zinc-800 transition-colors">
+              Backup Data (JSON)
+            </button>
+            <span class="text-zinc-300">&bull;</span>
+            <label class="cursor-pointer text-zinc-500 hover:text-zinc-800 transition-colors">
+              <span>Restore Backup</span>
+              <input type="file" id="import-json-input" accept=".json" class="hidden">
+            </label>
+          </div>
+        </footer>
+
+      </main>
+    </div>
+
+    <!-- VIEW 2: DASHBOARD & INVOICE HISTORY -->
+    <div id="view-dashboard" class="hidden space-y-4 anim-fade">
+      
+      <!-- Metrics Overview -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white p-4 rounded-xl border border-zinc-200/80 shadow-xs">
+          <span class="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Total Invoiced</span>
+          <span class="text-lg font-bold font-mono text-zinc-900" id="dash-total-invoiced">₹0.00</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-zinc-200/80 shadow-xs">
+          <span class="text-[10px] font-mono uppercase text-emerald-600 block mb-1">Paid & Collected</span>
+          <span class="text-lg font-bold font-mono text-emerald-700" id="dash-total-paid">₹0.00</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-zinc-200/80 shadow-xs">
+          <span class="text-[10px] font-mono uppercase text-amber-600 block mb-1">Outstanding</span>
+          <span class="text-lg font-bold font-mono text-amber-700" id="dash-total-pending">₹0.00</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-zinc-200/80 shadow-xs">
+          <span class="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Active Invoices</span>
+          <span class="text-lg font-bold font-mono text-zinc-900" id="dash-invoice-count">0</span>
+        </div>
+      </div>
+
+      <!-- Invoices List Card -->
+      <div class="bg-white rounded-2xl border border-zinc-200/80 shadow-xs p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-zinc-900">Invoice History & Status</h2>
+            <p class="text-xs text-zinc-500">Manage, reopen, or duplicate all created invoices</p>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="flex items-center gap-2">
+            <input type="text" id="dash-search-input" placeholder="Search client or INV #..." class="text-xs px-2.5 py-1.5 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-900 w-44">
+            <select id="dash-filter-status" class="text-xs px-2 py-1.5 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-900 bg-white cursor-pointer">
+              <option value="ALL">All Statuses</option>
+              <option value="PAID">Paid</option>
+              <option value="SENT">Sent</option>
+              <option value="DRAFT">Draft</option>
+              <option value="OVERDUE">Overdue</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table of Invoices -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 border-b border-zinc-100">
+                <th class="pb-3 font-normal">Invoice #</th>
+                <th class="pb-3 font-normal">Client</th>
+                <th class="pb-3 font-normal">Date</th>
+                <th class="pb-3 font-normal">Status</th>
+                <th class="pb-3 font-normal text-right">Amount</th>
+                <th class="pb-3 font-normal text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dash-invoices-tbody" class="divide-y divide-zinc-50">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: CLIENT DIRECTORY -->
+    <div id="view-clients" class="hidden space-y-4 anim-fade">
+      <div class="bg-white rounded-2xl border border-zinc-200/80 shadow-xs p-6 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-semibold text-zinc-900">Client Directory</h2>
+            <p class="text-xs text-zinc-500">Store clients for 1-click invoice generation</p>
+          </div>
+          <button id="add-client-manual-btn" type="button" class="px-3 py-1.5 text-xs font-medium text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all self-start sm:self-auto">
+            + New Client
+          </button>
+        </div>
+
+        <!-- Add Client Drawer Form -->
+        <div id="new-client-form-card" class="hidden p-4 rounded-xl bg-zinc-50 border border-zinc-200 space-y-3">
+          <h3 class="text-xs font-semibold text-zinc-800">Add Client Details</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="nc-name" placeholder="Company / Client Name" class="text-xs px-2.5 py-1.5 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
+            <input type="email" id="nc-email" placeholder="Billing Email" class="text-xs px-2.5 py-1.5 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
+            <input type="text" id="nc-address" placeholder="Address &bull; GSTIN / Tax ID" class="text-xs px-2.5 py-1.5 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
+          </div>
+          <div class="flex justify-end gap-2">
+            <button id="cancel-nc-btn" type="button" class="px-3 py-1 text-xs text-zinc-600 hover:bg-zinc-200 rounded">Cancel</button>
+            <button id="save-nc-btn" type="button" class="px-3 py-1 text-xs bg-zinc-900 text-white rounded font-medium">Save Client</button>
+          </div>
+        </div>
+
+        <!-- Clients Grid -->
+        <div id="clients-list-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Currency Configuration
+    const CURRENCIES = {
+      INR: { symbol: '₹', code: 'INR' },
+      USD: { symbol: '$', code: 'USD' },
+      EUR: { symbol: '€', code: 'EUR' },
+      GBP: { symbol: '£', code: 'GBP' },
+      CAD: { symbol: 'CA$', code: 'CAD' },
+      AUD: { symbol: 'AU$', code: 'AUD' },
+      JPY: { symbol: '¥', code: 'JPY' }
+    };
+
+    // Global Application State
+    const AppState = {
+      activeTab: 'editor',
+      currentCurrency: 'INR',
+      isPro: false,
+      licenseKey: '',
+      activeInvoiceId: 'inv_default_01',
+      invoices: [
+        {
+          id: 'inv_default_01',
+          number: 'INV-001',
+          status: 'SENT',
+          issueDate: new Date().toISOString().split('T')[0],
+          dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+          sellerName: 'Studio Minimal India LLP',
+          sellerEmail: 'billing@studiominimal.in',
+          sellerAddress: 'Indiranagar, 100 Feet Rd, Bengaluru 560038 • GSTIN: 29AAAAA0000A1Z5',
+          clientName: 'Kanso Technologies Pvt Ltd',
+          clientEmail: 'finance@kansotech.in',
+          clientAddress: 'Koramangala 4th Block, Bengaluru, Karnataka • GSTIN: 29BBBBB1111B1Z2',
+          paymentTerms: 'Payment due within 14 days of invoice date. UPI, IMPS, or NEFT accepted.',
+          bankDetails: 'HDFC Bank • A/C: 50200012345678 • IFSC: HDFC0000140',
+          payHandle: 'alex@okaxis',
+          discountRate: 0,
+          taxRate: 18,
+          logoUrl: '',
+          lineItems: [
+            { id: '1', desc: 'UI/UX Product Design & Mobile App Prototyping', qty: 1, rate: 45000 },
+            { id: '2', desc: 'Design System & Component Tokens Library', qty: 1, rate: 25000 }
+          ]
+        },
+        {
+          id: 'inv_default_02',
+          number: 'INV-002',
+          status: 'PAID',
+          issueDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0],
+          dueDate: new Date(Date.now() - 11 * 86400000).toISOString().split('T')[0],
+          sellerName: 'Studio Minimal India LLP',
+          sellerEmail: 'billing@studiominimal.in',
+          sellerAddress: 'Indiranagar, Bengaluru • GSTIN: 29AAAAA0000A1Z5',
+          clientName: 'Apex Cloud Systems',
+          clientEmail: 'accounts@apexcloud.io',
+          clientAddress: '100 Silicon Blvd, Suite 400, San Jose, CA',
+          paymentTerms: 'Paid in full via Bank Wire.',
+          bankDetails: 'HDFC Bank • SWIFT: HDFCINBB',
+          payHandle: 'alex@studiominimal.in',
+          discountRate: 5,
+          taxRate: 0,
+          logoUrl: '',
+          lineItems: [
+            { id: '1', desc: 'Cloud DevOps Architecture Consulting', qty: 20, rate: 2500 },
+            { id: '2', desc: 'Kubernetes Cluster Setup', qty: 1, rate: 35000 }
+          ]
+        }
+      ],
+      clients: [
+        {
+          id: 'c1',
+          name: 'Kanso Technologies Pvt Ltd',
+          email: 'finance@kansotech.in',
+          address: 'Koramangala 4th Block, Bengaluru, Karnataka • GSTIN: 29BBBBB1111B1Z2'
+        },
+        {
+          id: 'c2',
+          name: 'Apex Cloud Systems',
+          email: 'accounts@apexcloud.io',
+          address: '100 Silicon Blvd, Suite 400, San Jose, CA'
+        }
+      ]
+    };
+
+    // DOM Element References
+    const tabEditorBtn = document.getElementById('tab-editor-btn');
+    const tabDashboardBtn = document.getElementById('tab-dashboard-btn');
+    const tabClientsBtn = document.getElementById('tab-clients-btn');
+    const viewEditor = document.getElementById('view-editor');
+    const viewDashboard = document.getElementById('view-dashboard');
+    const viewClients = document.getElementById('view-clients');
+
+    const currencySelect = document.getElementById('currency-select');
+    const resetBtn = document.getElementById('reset-btn');
+    const newInvoiceBtn = document.getElementById('new-invoice-btn');
+    const mobileNewBtn = document.getElementById('mobile-new-btn');
+    const printBtn = document.getElementById('print-btn');
+    const downloadPdfBtn = document.getElementById('download-pdf-btn');
+    const downloadPdfLabel = document.getElementById('download-pdf-label');
+    const duplicateBtn = document.getElementById('duplicate-invoice-btn');
+
+    const sellerName = document.getElementById('seller-name');
+    const sellerEmail = document.getElementById('seller-email');
+    const sellerAddress = document.getElementById('seller-address');
+    const clientName = document.getElementById('client-name');
+    const clientEmail = document.getElementById('client-email');
+    const clientAddress = document.getElementById('client-address');
+    const invoiceNumber = document.getElementById('invoice-number');
+    const invoiceDate = document.getElementById('invoice-date');
+    const invoiceDueDate = document.getElementById('invoice-due-date');
+    const invoiceStatus = document.getElementById('invoice-status');
+    const statusPill = document.getElementById('status-pill');
+    const statusText = document.getElementById('status-text');
+
+    const paymentTerms = document.getElementById('payment-terms');
+    const bankDetails = document.getElementById('bank-details');
+    const payHandleInput = document.getElementById('pay-handle-input');
+    const copyPaylinkBtn = document.getElementById('copy-paylink-btn');
+    const qrOutput = document.getElementById('qr-output');
+    const qrInstructionsText = document.getElementById('qr-instructions-text');
+
+    const discountRateInput = document.getElementById('discount-rate');
+    const taxRateInput = document.getElementById('tax-rate');
+    const subtotalDisplay = document.getElementById('subtotal-display');
+    const discountDisplay = document.getElementById('discount-display');
+    const taxDisplay = document.getElementById('tax-display');
+    const totalDisplay = document.getElementById('total-display');
+
+    const lineItemsTbody = document.getElementById('line-items');
+    const addItemBtn = document.getElementById('add-item-btn');
+    const itemCountLabel = document.getElementById('item-count-label');
+
+    const logoInput = document.getElementById('logo-input');
+    const removeLogoBtn = document.getElementById('remove-logo-btn');
+    const logoPreviewContainer = document.getElementById('logo-preview-container');
+    const logoPreview = document.getElementById('logo-preview');
+    const logoText = document.getElementById('logo-text');
+
+    const toastContainer = document.getElementById('toast-container');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMsg = document.getElementById('modal-msg');
+    const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+    const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+    const proBadgeBtn = document.getElementById('pro-badge-btn');
+    const proBadgeDot = document.getElementById('pro-badge-dot');
+    const proBadgeText = document.getElementById('pro-badge-text');
+    const proModalBackdrop = document.getElementById('pro-modal-backdrop');
+    const closeProModalBtn = document.getElementById('close-pro-modal-btn');
+    const activateLicenseBtn = document.getElementById('activate-license-btn');
+    const proLicenseInput = document.getElementById('pro-license-input');
+    const instantBuyBtn = document.getElementById('instant-buy-btn');
+    const freeWatermarkTag = document.getElementById('free-watermark-tag');
+    const proWatermarkTag = document.getElementById('pro-watermark-tag');
+    const watermarkUpgradeBtn = document.getElementById('watermark-upgrade-btn');
+
+    let modalActionCallback = null;
+    let qrCodeInstance = null;
+
+    // Toast Notification System
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'anim-toast px-3.5 py-2 bg-zinc-900 text-white text-xs font-mono rounded-xl shadow-xl flex items-center gap-2 pointer-events-auto border border-zinc-700/50';
+      toast.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span>${message}</span>`;
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(6px)';
+        setTimeout(() => toast.remove(), 250);
+      }, 2300);
+    }
+
+    // Modal Confirmation Dialog
+    function showModal(title, message, onConfirm) {
+      modalTitle.textContent = title;
+      modalMsg.textContent = message;
+      modalActionCallback = onConfirm;
+      modalBackdrop.classList.remove('hidden');
+    }
+
+    modalCancelBtn.addEventListener('click', () => {
+      modalBackdrop.classList.add('hidden');
+      modalActionCallback = null;
+    });
+
+    modalConfirmBtn.addEventListener('click', () => {
+      if (modalActionCallback) modalActionCallback();
+      modalBackdrop.classList.add('hidden');
+      modalActionCallback = null;
+    });
+
+    // Pro Upgrade Modal Handling
+    function openProModal() {
+      proModalBackdrop.classList.remove('hidden');
+    }
+    function closeProModal() {
+      proModalBackdrop.classList.add('hidden');
+    }
+
+    proBadgeBtn.addEventListener('click', openProModal);
+    closeProModalBtn.addEventListener('click', closeProModal);
+    watermarkUpgradeBtn.addEventListener('click', openProModal);
+
+    function applyProStatus(isPro) {
+      AppState.isPro = isPro;
+      if (isPro) {
+        proBadgeDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+        proBadgeText.textContent = 'PRO ACTIVATED';
+        proBadgeBtn.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold flex items-center gap-1';
+        freeWatermarkTag.classList.add('hidden');
+        proWatermarkTag.classList.remove('hidden');
+      } else {
+        proBadgeDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-500';
+        proBadgeText.textContent = 'Free Tier • Upgrade';
+        proBadgeBtn.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 hover:bg-zinc-200 font-semibold flex items-center gap-1 transition-colors';
+        freeWatermarkTag.classList.remove('hidden');
+        proWatermarkTag.classList.add('hidden');
+      }
+      saveState();
+    }
+
+    activateLicenseBtn.addEventListener('click', () => {
+      const key = (proLicenseInput.value || '').trim();
+      if (key.length >= 6) {
+        AppState.licenseKey = key;
+        applyProStatus(true);
+        closeProModal();
+        showToast('Pro License Activated! Watermarks removed.');
+      } else {
+        showToast('Please enter a valid key (e.g. FOUNDER2026)');
+      }
+    });
+
+    instantBuyBtn.addEventListener('click', () => {
+      AppState.licenseKey = 'LIFETIME-PRO-' + Date.now().toString(36).toUpperCase();
+      applyProStatus(true);
+      closeProModal();
+      showToast('Welcome to QuickInvoice Pro!');
+    });
+
+    // Money Formatting
+    function formatMoney(amount) {
+      const { symbol, code } = CURRENCIES[AppState.currentCurrency] || CURRENCIES.INR;
+      if (code === 'JPY') {
+        return symbol + Math.round(amount).toLocaleString('en-US');
+      }
+      return symbol + Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Number Pulse Animation
+    function triggerPulse(el) {
+      el.classList.remove('anim-pulse');
+      void el.offsetWidth;
+      el.classList.add('anim-pulse');
+    }
+
+    // Active Invoice Helper
+    function getActiveInvoice() {
+      let inv = AppState.invoices.find(i => i.id === AppState.activeInvoiceId);
+      if (!inv) {
+        inv = AppState.invoices[0];
+        AppState.activeInvoiceId = inv.id;
+      }
+      return inv;
+    }
+
+    // Tab Navigation
+    function setTab(tab) {
+      AppState.activeTab = tab;
+      [tabEditorBtn, tabDashboardBtn, tabClientsBtn].forEach(btn => {
+        btn.classList.remove('bg-white', 'text-zinc-900', 'shadow-xs');
+        btn.classList.add('text-zinc-500');
+      });
+
+      viewEditor.classList.add('hidden');
+      viewDashboard.classList.add('hidden');
+      viewClients.classList.add('hidden');
+
+      if (tab === 'editor') {
+        tabEditorBtn.classList.add('bg-white', 'text-zinc-900', 'shadow-xs');
+        tabEditorBtn.classList.remove('text-zinc-500');
+        viewEditor.classList.remove('hidden');
+        updateDynamicQRCode();
+      } else if (tab === 'dashboard') {
+        tabDashboardBtn.classList.add('bg-white', 'text-zinc-900', 'shadow-xs');
+        tabDashboardBtn.classList.remove('text-zinc-500');
+        viewDashboard.classList.remove('hidden');
+        renderDashboard();
+      } else if (tab === 'clients') {
+        tabClientsBtn.classList.add('bg-white', 'text-zinc-900', 'shadow-xs');
+        tabClientsBtn.classList.remove('text-zinc-500');
+        viewClients.classList.remove('hidden');
+        renderClientsView();
+      }
+    }
+
+    tabEditorBtn.addEventListener('click', () => setTab('editor'));
+    tabDashboardBtn.addEventListener('click', () => setTab('dashboard'));
+    tabClientsBtn.addEventListener('click', () => setTab('clients'));
+
+    // Populate Editor Fields
+    function loadActiveInvoiceIntoEditor() {
+      const inv = getActiveInvoice();
+      sellerName.value = inv.sellerName || '';
+      sellerEmail.value = inv.sellerEmail || '';
+      sellerAddress.value = inv.sellerAddress || '';
+      clientName.value = inv.clientName || '';
+      clientEmail.value = inv.clientEmail || '';
+      clientAddress.value = inv.clientAddress || '';
+      invoiceNumber.value = inv.number || '';
+      invoiceDate.value = inv.issueDate || '';
+      invoiceDueDate.value = inv.dueDate || '';
+      paymentTerms.value = inv.paymentTerms || '';
+      bankDetails.value = inv.bankDetails || '';
+      payHandleInput.value = inv.payHandle || '';
+      discountRateInput.value = inv.discountRate !== undefined ? inv.discountRate : 0;
+      taxRateInput.value = inv.taxRate !== undefined ? inv.taxRate : 18;
+      invoiceStatus.value = inv.status || 'SENT';
+
+      updateStatusBadge(inv.status || 'SENT');
+
+      if (inv.logoUrl) {
+        logoPreview.src = inv.logoUrl;
+        logoPreviewContainer.classList.remove('hidden');
+        removeLogoBtn.classList.remove('hidden');
+        logoText.textContent = 'Change Logo';
+      } else {
+        logoPreview.src = '';
+        logoPreviewContainer.classList.add('hidden');
+        removeLogoBtn.classList.add('hidden');
+        logoText.textContent = 'Add Logo';
+      }
+
+      renderLineItems();
+      updateBadges();
+      populateClientQuickSelect();
+      updateDynamicQRCode();
+    }
+
+    // Status Badge Styling
+    function updateStatusBadge(status) {
+      statusText.textContent = status;
+      statusPill.className = 'inline-flex items-center gap-1.5 text-[11px] font-mono tracking-widest uppercase px-2 py-0.5 rounded font-semibold ';
+      if (status === 'PAID') {
+        statusPill.className += 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      } else if (status === 'OVERDUE') {
+        statusPill.className += 'bg-rose-50 text-rose-700 border border-rose-200';
+      } else if (status === 'DRAFT') {
+        statusPill.className += 'bg-zinc-100 text-zinc-600 border border-zinc-200';
+      } else {
+        statusPill.className += 'bg-zinc-100 text-zinc-800 border border-zinc-200';
+      }
+    }
+
+    invoiceStatus.addEventListener('change', (e) => {
+      const inv = getActiveInvoice();
+      inv.status = e.target.value;
+      updateStatusBadge(inv.status);
+      showToast(`Invoice marked as ${inv.status}`);
+      saveState();
+    });
+
+    // Render Line Items in Table
+    function renderLineItems() {
+      const inv = getActiveInvoice();
+      lineItemsTbody.innerHTML = '';
+
+      inv.lineItems.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'group transition-colors hover:bg-zinc-50/50 anim-row';
+        tr.dataset.id = item.id;
+
+        const amount = (item.qty || 0) * (item.rate || 0);
+
+        const descId = index === 0 ? 'id="item-desc"' : '';
+        const qtyId = index === 0 ? 'id="item-qty"' : '';
+        const rateId = index === 0 ? 'id="item-rate"' : '';
+        const totalId = index === 0 ? 'id="item-total"' : '';
+
+        tr.innerHTML = `
+          <td class="py-3 pr-2">
+            <input type="text" ${descId} value="${escapeHtml(item.desc)}" class="item-desc-input w-full text-xs font-medium text-zinc-800 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none transition-colors bg-transparent placeholder-zinc-300" placeholder="Service or deliverable description">
+          </td>
+          <td class="py-3 text-right">
+            <input type="number" min="0" step="1" ${qtyId} value="${item.qty}" class="item-qty-input w-14 text-right text-xs font-mono font-medium text-zinc-800 border border-zinc-200 bg-white rounded-md px-1.5 py-1 focus:border-zinc-900 focus:outline-none transition-all">
+          </td>
+          <td class="py-3 text-right">
+            <input type="number" min="0" step="0.01" ${rateId} value="${item.rate}" class="item-rate-input w-24 text-right text-xs font-mono font-medium text-zinc-800 border border-zinc-200 bg-white rounded-md px-1.5 py-1 focus:border-zinc-900 focus:outline-none transition-all">
+          </td>
+          <td class="py-3 text-right font-mono text-xs font-medium text-zinc-900 tabular-nums" ${totalId}>
+            ${formatMoney(amount)}
+          </td>
+          <td class="py-3 text-right no-print remove-btn-col">
+            <button type="button" class="remove-item-btn p-1 text-zinc-300 hover:text-rose-600 rounded transition-colors ${inv.lineItems.length <= 1 ? 'opacity-25 cursor-not-allowed' : 'active:scale-95'}" ${inv.lineItems.length <= 1 ? 'disabled' : ''} title="Remove Item">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </td>
+        `;
+        lineItemsTbody.appendChild(tr);
+      });
+
+      itemCountLabel.textContent = `${inv.lineItems.length} item${inv.lineItems.length === 1 ? '' : 's'}`;
+      attachRowEventListeners();
+      recalculateTotals();
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    // Attach Row Listeners
+    function attachRowEventListeners() {
+      const inv = getActiveInvoice();
+      const rows = lineItemsTbody.querySelectorAll('tr');
+
+      rows.forEach((row, index) => {
+        const descInput = row.querySelector('.item-desc-input');
+        const qtyInput = row.querySelector('.item-qty-input');
+        const rateInput = row.querySelector('.item-rate-input');
+        const removeBtn = row.querySelector('.remove-item-btn');
+
+        descInput.addEventListener('input', (e) => {
+          inv.lineItems[index].desc = e.target.value;
+          saveState();
+        });
+
+        qtyInput.addEventListener('input', (e) => {
+          inv.lineItems[index].qty = parseFloat(e.target.value) || 0;
+          recalculateTotals();
+          saveState();
+        });
+
+        rateInput.addEventListener('input', (e) => {
+          inv.lineItems[index].rate = parseFloat(e.target.value) || 0;
+          recalculateTotals();
+          saveState();
+        });
+
+        if (removeBtn && !removeBtn.disabled) {
+          removeBtn.addEventListener('click', () => {
+            if (inv.lineItems.length > 1) {
+              inv.lineItems.splice(index, 1);
+              renderLineItems();
+              showToast('Item deleted');
+              saveState();
+            }
+          });
+        }
+      });
+    }
+
+    // Dynamic Live QR Code Generator Logic
+    function getPaymentURI() {
+      const inv = getActiveInvoice();
+      const handle = (payHandleInput.value || '').trim();
+      const payeeName = (sellerName.value || 'Payee').trim();
+      
+      let sub = 0;
+      inv.lineItems.forEach(it => sub += (it.qty || 0) * (it.rate || 0));
+      const disc = sub * ((parseFloat(discountRateInput.value) || 0) / 100);
+      const taxable = Math.max(0, sub - disc);
+      const tax = taxable * ((parseFloat(taxRateInput.value) || 0) / 100);
+      const grandTotal = taxable + tax;
+
+      // Handle UPI payment URI (Standard for India & UPI apps)
+      if (handle.includes('@') || AppState.currentCurrency === 'INR') {
+        const pa = encodeURIComponent(handle || 'business@upi');
+        const pn = encodeURIComponent(payeeName);
+        const am = encodeURIComponent(grandTotal.toFixed(2));
+        const cu = 'INR';
+        const tn = encodeURIComponent('Invoice ' + (invoiceNumber.value || 'INV-001'));
+        return `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=${cu}&tn=${tn}`;
+      }
+
+      // Handle PayPal or standard URLs
+      if (handle.startsWith('http://') || handle.startsWith('https://')) {
+        return handle;
+      }
+      if (handle) {
+        return `https://paypal.me/${handle.replace(/^@/, '')}/${grandTotal.toFixed(2)}`;
+      }
+
+      return `upi://pay?pa=business@upi&pn=${encodeURIComponent(payeeName)}&am=${grandTotal.toFixed(2)}&cu=INR`;
+    }
+
+    function updateDynamicQRCode() {
+      const uri = getPaymentURI();
+      qrOutput.innerHTML = '';
+
+      if (payHandleInput.value.includes('@') || AppState.currentCurrency === 'INR') {
+        qrInstructionsText.textContent = 'Scan with GPay, PhonePe, Paytm, or BHIM for instant UPI payment.';
+      } else {
+        qrInstructionsText.textContent = 'Scan via mobile camera or PayPal app to settle invoice instantly.';
+      }
+
+      try {
+        if (typeof QRCode !== 'undefined') {
+          qrCodeInstance = new QRCode(qrOutput, {
+            text: uri,
+            width: 72,
+            height: 72,
+            colorDark: '#09090b',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        } else {
+          // Pure SVG Fallback QR Pattern
+          renderSvgQrFallback(uri);
+        }
+      } catch (e) {
+        renderSvgQrFallback(uri);
+      }
+    }
+
+    function renderSvgQrFallback(uri) {
+      qrOutput.innerHTML = `
+        <svg class="w-16 h-16 text-zinc-900" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 0h-2v2h2v-2zm-4 0h2v2h-2v-2zm2 4h-2v2h2v-2zm2 0h2v2h-2v-2zm-6-2h2v2h-2v-2zm8-2h-2v2h2v-2zm-2-2h2v2h-2v-2zm-2 0h-2v2h2v-2z" />
+        </svg>
+      `;
+    }
+
+    payHandleInput.addEventListener('input', () => {
+      getActiveInvoice().payHandle = payHandleInput.value;
+      updateDynamicQRCode();
+      saveState();
+    });
+
+    copyPaylinkBtn.addEventListener('click', () => {
+      const uri = getPaymentURI();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(uri).then(() => {
+          showToast('Payment URI copied to clipboard');
+        }).catch(() => fallbackCopy(uri));
+      } else {
+        fallbackCopy(uri);
+      }
+    });
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      showToast('Payment URI copied');
+    }
+
+    // Totals Recalculation
+    function recalculateTotals() {
+      const inv = getActiveInvoice();
+      let subtotal = 0;
+      inv.lineItems.forEach(item => {
+        subtotal += (item.qty || 0) * (item.rate || 0);
+      });
+
+      const discountRate = parseFloat(discountRateInput.value) || 0;
+      const discountAmount = subtotal * (discountRate / 100);
+      const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+
+      const taxRate = parseFloat(taxRateInput.value) || 0;
+      const taxAmount = discountedSubtotal * (taxRate / 100);
+      const grandTotal = discountedSubtotal + taxAmount;
+
+      subtotalDisplay.textContent = formatMoney(subtotal);
+      discountDisplay.textContent = (discountAmount > 0 ? '-' : '') + formatMoney(discountAmount);
+      taxDisplay.textContent = formatMoney(taxAmount);
+      totalDisplay.textContent = formatMoney(grandTotal);
+
+      triggerPulse(totalDisplay);
+      updateDynamicQRCode();
+    }
+
+    // Add New Line Item Action
+    addItemBtn.addEventListener('click', () => {
+      const inv = getActiveInvoice();
+      inv.lineItems.push({
+        id: String(Date.now()),
+        desc: '',
+        qty: 1,
+        rate: 0
+      });
+      renderLineItems();
+      showToast('Line item added');
+      saveState();
+
+      const lastRow = lineItemsTbody.querySelector('tr:last-child .item-desc-input');
+      if (lastRow) lastRow.focus();
+    });
+
+    // Quick Preset Items
+    document.querySelectorAll('.quick-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inv = getActiveInvoice();
+        inv.lineItems.push({
+          id: String(Date.now()),
+          desc: btn.dataset.desc,
+          qty: parseFloat(btn.dataset.qty) || 1,
+          rate: parseFloat(btn.dataset.rate) || 0
+        });
+        renderLineItems();
+        showToast(`Added: ${btn.dataset.desc}`);
+        saveState();
+      });
+    });
+
+    // Due Date Quick Presets
+    document.querySelectorAll('.due-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const days = parseInt(btn.dataset.days, 10);
+        const baseDate = invoiceDate.value ? new Date(invoiceDate.value) : new Date();
+        baseDate.setDate(baseDate.getDate() + days);
+        invoiceDueDate.value = baseDate.toISOString().split('T')[0];
+        getActiveInvoice().dueDate = invoiceDueDate.value;
+        showToast(days === 0 ? 'Due on Receipt set' : `Net ${days} applied`);
+        saveState();
+      });
+    });
+
+    // Tax Preset Buttons
+    document.querySelectorAll('.tax-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        taxRateInput.value = btn.dataset.tax;
+        getActiveInvoice().taxRate = parseFloat(btn.dataset.tax) || 0;
+        recalculateTotals();
+        showToast(`Tax rate set to ${btn.dataset.tax}%`);
+        saveState();
+      });
+    });
+
+    // Currency Switcher
+    currencySelect.addEventListener('change', (e) => {
+      AppState.currentCurrency = e.target.value;
+      renderLineItems();
+      if (AppState.activeTab === 'dashboard') renderDashboard();
+      showToast(`Active currency: ${AppState.currentCurrency}`);
+      saveState();
+    });
+
+    // Discount & Tax Listeners
+    discountRateInput.addEventListener('input', () => {
+      getActiveInvoice().discountRate = parseFloat(discountRateInput.value) || 0;
+      recalculateTotals();
+      saveState();
+    });
+    taxRateInput.addEventListener('input', () => {
+      getActiveInvoice().taxRate = parseFloat(taxRateInput.value) || 0;
+      recalculateTotals();
+      saveState();
+    });
+
+    // Logo Handling via FileReader
+    logoInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const inv = getActiveInvoice();
+          inv.logoUrl = event.target.result;
+          logoPreview.src = inv.logoUrl;
+          logoPreviewContainer.classList.remove('hidden');
+          removeLogoBtn.classList.remove('hidden');
+          logoText.textContent = 'Change Logo';
+          showToast('Company logo attached');
+          saveState();
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    removeLogoBtn.addEventListener('click', () => {
+      const inv = getActiveInvoice();
+      inv.logoUrl = '';
+      logoPreview.src = '';
+      logoPreviewContainer.classList.add('hidden');
+      removeLogoBtn.classList.add('hidden');
+      logoInput.value = '';
+      logoText.textContent = 'Add Logo';
+      showToast('Logo removed');
+      saveState();
+    });
+
+    // Native Browser Print
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+
+    // Direct 1-Click PDF Download Engine (via html2pdf.js)
+    downloadPdfBtn.addEventListener('click', () => {
+      const inv = getActiveInvoice();
+      const target = document.getElementById('invoice-printable-area');
+      const filename = `${inv.number || 'Invoice'}_${(inv.clientName || 'Client').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+
+      downloadPdfLabel.textContent = 'Generating PDF...';
+      downloadPdfBtn.disabled = true;
+      showToast('Rendering high-resolution vector PDF...');
+
+      if (typeof html2pdf !== 'undefined') {
+        const opt = {
+          margin: [10, 10, 10, 10],
+          filename: filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(target).save().then(() => {
+          downloadPdfLabel.textContent = 'Download PDF';
+          downloadPdfBtn.disabled = false;
+          showToast(`Downloaded: ${filename}`);
+        }).catch((err) => {
+          downloadPdfLabel.textContent = 'Download PDF';
+          downloadPdfBtn.disabled = false;
+          showToast('Triggering print dialog fallback...');
+          window.print();
+        });
+      } else {
+        downloadPdfLabel.textContent = 'Download PDF';
+        downloadPdfBtn.disabled = false;
+        window.print();
+      }
+    });
+
+    // Reset Form
+    resetBtn.addEventListener('click', () => {
+      showModal(
+        'Reset Active Invoice?',
+        'This will restore this invoice template to default starter values.',
+        () => {
+          const inv = getActiveInvoice();
+          inv.sellerName = 'Studio Minimal India LLP';
+          inv.sellerEmail = 'billing@studiominimal.in';
+          inv.sellerAddress = 'Indiranagar, 100 Feet Rd, Bengaluru 560038 • GSTIN: 29AAAAA0000A1Z5';
+          inv.clientName = 'Kanso Technologies Pvt Ltd';
+          inv.clientEmail = 'finance@kansotech.in';
+          inv.clientAddress = 'Koramangala 4th Block, Bengaluru, Karnataka • GSTIN: 29BBBBB1111B1Z2';
+          inv.paymentTerms = 'Payment due within 14 days of invoice date. UPI, IMPS, or NEFT accepted.';
+          inv.bankDetails = 'HDFC Bank • A/C: 50200012345678 • IFSC: HDFC0000140';
+          inv.payHandle = 'alex@okaxis';
+          inv.discountRate = 0;
+          inv.taxRate = 18;
+          inv.status = 'SENT';
+          inv.logoUrl = '';
+          inv.lineItems = [
+            { id: '1', desc: 'UI/UX Product Design & Mobile App Prototyping', qty: 1, rate: 45000 },
+            { id: '2', desc: 'Design System & Component Tokens Library', qty: 1, rate: 25000 }
+          ];
+
+          loadActiveInvoiceIntoEditor();
+          showToast('Invoice reset to default');
+          saveState();
+        }
+      );
+    });
+
+    // New Invoice Generator
+    function createNewInvoice() {
+      const nextNum = 'INV-' + String(AppState.invoices.length + 1).padStart(3, '0');
+      const todayStr = new Date().toISOString().split('T')[0];
+      const dueStr = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
+      const current = getActiveInvoice();
+
+      const newInv = {
+        id: 'inv_' + Date.now(),
+        number: nextNum,
+        status: 'DRAFT',
+        issueDate: todayStr,
+        dueDate: dueStr,
+        sellerName: current.sellerName || 'Studio Minimal India LLP',
+        sellerEmail: current.sellerEmail || 'billing@studiominimal.in',
+        sellerAddress: current.sellerAddress || '',
+        clientName: '',
+        clientEmail: '',
+        clientAddress: '',
+        paymentTerms: current.paymentTerms || 'Payment due within 14 days of invoice date.',
+        bankDetails: current.bankDetails || '',
+        payHandle: current.payHandle || '',
+        discountRate: 0,
+        taxRate: current.taxRate !== undefined ? current.taxRate : 18,
+        logoUrl: current.logoUrl || '',
+        lineItems: [
+          { id: String(Date.now()), desc: 'Engineering & Consulting Deliverable', qty: 1, rate: 10000 }
+        ]
+      };
+
+      AppState.invoices.unshift(newInv);
+      AppState.activeInvoiceId = newInv.id;
+      setTab('editor');
+      loadActiveInvoiceIntoEditor();
+      showToast(`New invoice ${nextNum} created`);
+      saveState();
+    }
+
+    newInvoiceBtn.addEventListener('click', createNewInvoice);
+    mobileNewBtn.addEventListener('click', createNewInvoice);
+
+    // Duplicate Invoice
+    duplicateBtn.addEventListener('click', () => {
+      const current = getActiveInvoice();
+      const nextNum = current.number + '-COPY';
+      const cloned = JSON.parse(JSON.stringify(current));
+      cloned.id = 'inv_' + Date.now();
+      cloned.number = nextNum;
+      cloned.status = 'DRAFT';
+      AppState.invoices.unshift(cloned);
+      AppState.activeInvoiceId = cloned.id;
+      loadActiveInvoiceIntoEditor();
+      showToast(`Cloned as ${nextNum}`);
+      saveState();
+    });
+
+    // Populate Client Quick Select
+    function populateClientQuickSelect() {
+      const select = document.getElementById('client-quick-select');
+      select.innerHTML = '<option value="">Select from directory...</option>';
+      AppState.clients.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        select.appendChild(opt);
+      });
+    }
+
+    document.getElementById('client-quick-select').addEventListener('change', (e) => {
+      const clientId = e.target.value;
+      if (!clientId) return;
+      const client = AppState.clients.find(c => c.id === clientId);
+      if (client) {
+        clientName.value = client.name;
+        clientEmail.value = client.email;
+        clientAddress.value = client.address;
+        const inv = getActiveInvoice();
+        inv.clientName = client.name;
+        inv.clientEmail = client.email;
+        inv.clientAddress = client.address;
+        showToast(`Loaded ${client.name}`);
+        saveState();
+      }
+    });
+
+    // Save Current Client to Directory
+    document.getElementById('save-current-client-btn').addEventListener('click', () => {
+      const name = clientName.value.trim();
+      const email = clientEmail.value.trim();
+      const address = clientAddress.value.trim();
+
+      if (!name) {
+        showToast('Please enter a client name');
+        return;
+      }
+
+      const existingIndex = AppState.clients.findIndex(c => c.name.toLowerCase() === name.toLowerCase());
+      if (existingIndex >= 0) {
+        AppState.clients[existingIndex] = { id: AppState.clients[existingIndex].id, name, email, address };
+        showToast(`Updated ${name} in directory`);
+      } else {
+        AppState.clients.push({ id: 'c_' + Date.now(), name, email, address });
+        showToast(`Added ${name} to directory`);
+      }
+
+      populateClientQuickSelect();
+      updateBadges();
+      saveState();
+    });
+
+    // Update Counts Badges
+    function updateBadges() {
+      document.getElementById('invoices-count-badge').textContent = AppState.invoices.length;
+      document.getElementById('clients-count-badge').textContent = AppState.clients.length;
+    }
+
+    // Dashboard View Render
+    function renderDashboard() {
+      updateBadges();
+      const tbody = document.getElementById('dash-invoices-tbody');
+      tbody.innerHTML = '';
+
+      let totalInvoiced = 0;
+      let totalPaid = 0;
+      let totalPending = 0;
+
+      const searchTerm = (document.getElementById('dash-search-input').value || '').toLowerCase();
+      const filterStatus = document.getElementById('dash-filter-status').value;
+
+      AppState.invoices.forEach(inv => {
+        let sub = 0;
+        (inv.lineItems || []).forEach(it => sub += (it.qty || 0) * (it.rate || 0));
+        const disc = sub * ((inv.discountRate || 0) / 100);
+        const taxable = Math.max(0, sub - disc);
+        const tax = taxable * ((inv.taxRate || 0) / 100);
+        const grand = taxable + tax;
+
+        totalInvoiced += grand;
+        if (inv.status === 'PAID') totalPaid += grand;
+        if (inv.status === 'SENT' || inv.status === 'OVERDUE') totalPending += grand;
+
+        // Filtering
+        const matchSearch = (inv.number || '').toLowerCase().includes(searchTerm) || (inv.clientName || '').toLowerCase().includes(searchTerm);
+        const matchStatus = filterStatus === 'ALL' || inv.status === filterStatus;
+
+        if (matchSearch && matchStatus) {
+          const tr = document.createElement('tr');
+          tr.className = 'group transition-colors hover:bg-zinc-50/70';
+          tr.innerHTML = `
+            <td class="py-3 font-mono font-medium text-zinc-900">${escapeHtml(inv.number)}</td>
+            <td class="py-3 font-medium text-zinc-800">${escapeHtml(inv.clientName || 'Untitled Client')}</td>
+            <td class="py-3 text-zinc-500 font-mono text-[11px]">${inv.issueDate || '-'}</td>
+            <td class="py-3">
+              <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
+                inv.status === 'PAID' ? 'bg-emerald-50 text-emerald-700' :
+                inv.status === 'OVERDUE' ? 'bg-rose-50 text-rose-700' :
+                inv.status === 'DRAFT' ? 'bg-zinc-100 text-zinc-600' : 'bg-zinc-100 text-zinc-800'
+              }">${inv.status}</span>
+            </td>
+            <td class="py-3 text-right font-mono font-semibold text-zinc-900 tabular-nums">${formatMoney(grand)}</td>
+            <td class="py-3 text-right space-x-1">
+              <button type="button" class="open-inv-btn px-2 py-1 text-[11px] font-medium text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 rounded" data-id="${inv.id}">Open</button>
+              <button type="button" class="del-inv-btn px-2 py-1 text-[11px] font-medium text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded" data-id="${inv.id}">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+
+      document.getElementById('dash-total-invoiced').textContent = formatMoney(totalInvoiced);
+      document.getElementById('dash-total-paid').textContent = formatMoney(totalPaid);
+      document.getElementById('dash-total-pending').textContent = formatMoney(totalPending);
+      document.getElementById('dash-invoice-count').textContent = AppState.invoices.length;
+
+      // Attach Dashboard Row Action Listeners
+      tbody.querySelectorAll('.open-inv-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          AppState.activeInvoiceId = btn.dataset.id;
+          setTab('editor');
+          loadActiveInvoiceIntoEditor();
+        });
+      });
+
+      tbody.querySelectorAll('.del-inv-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (AppState.invoices.length <= 1) {
+            showToast('Cannot delete the only invoice');
+            return;
+          }
+          showModal('Delete Invoice?', 'This invoice will be removed permanently.', () => {
+            AppState.invoices = AppState.invoices.filter(i => i.id !== btn.dataset.id);
+            if (AppState.activeInvoiceId === btn.dataset.id) {
+              AppState.activeInvoiceId = AppState.invoices[0].id;
+              loadActiveInvoiceIntoEditor();
+            }
+            renderDashboard();
+            showToast('Invoice deleted');
+            saveState();
+          });
+        });
+      });
+    }
+
+    document.getElementById('dash-search-input').addEventListener('input', renderDashboard);
+    document.getElementById('dash-filter-status').addEventListener('change', renderDashboard);
+
+    // Clients View Render
+    function renderClientsView() {
+      updateBadges();
+      const grid = document.getElementById('clients-list-grid');
+      grid.innerHTML = '';
+
+      AppState.clients.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/50 space-y-2 hover:border-zinc-300 transition-colors flex flex-col justify-between';
+        card.innerHTML = `
+          <div>
+            <div class="flex justify-between items-start">
+              <h4 class="font-semibold text-xs text-zinc-900">${escapeHtml(c.name)}</h4>
+              <button type="button" class="del-client-btn text-[10px] text-zinc-400 hover:text-rose-600 transition-colors" data-id="${c.id}">Remove</button>
+            </div>
+            <p class="text-[11px] text-zinc-500 font-mono mt-0.5">${escapeHtml(c.email || 'No email')}</p>
+            <p class="text-xs text-zinc-400 mt-1">${escapeHtml(c.address || 'No address stored')}</p>
+          </div>
+          <div class="pt-2 border-t border-zinc-100 flex justify-end">
+            <button type="button" class="use-client-btn px-2.5 py-1 text-[11px] font-medium bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-all active:scale-95" data-id="${c.id}">
+              Bill this client
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      grid.querySelectorAll('.use-client-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const client = AppState.clients.find(c => c.id === btn.dataset.id);
+          if (client) {
+            const inv = getActiveInvoice();
+            inv.clientName = client.name;
+            inv.clientEmail = client.email;
+            inv.clientAddress = client.address;
+            setTab('editor');
+            loadActiveInvoiceIntoEditor();
+            showToast(`Billing loaded for ${client.name}`);
+          }
+        });
+      });
+
+      grid.querySelectorAll('.del-client-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          AppState.clients = AppState.clients.filter(c => c.id !== btn.dataset.id);
+          renderClientsView();
+          populateClientQuickSelect();
+          showToast('Client removed');
+          saveState();
+        });
+      });
+    }
+
+    // Manual Add Client Form Controls
+    const addClientManualBtn = document.getElementById('add-client-manual-btn');
+    const newClientFormCard = document.getElementById('new-client-form-card');
+    const cancelNcBtn = document.getElementById('cancel-nc-btn');
+    const saveNcBtn = document.getElementById('save-nc-btn');
+
+    addClientManualBtn.addEventListener('click', () => {
+      newClientFormCard.classList.remove('hidden');
+      document.getElementById('nc-name').focus();
+    });
+
+    cancelNcBtn.addEventListener('click', () => {
+      newClientFormCard.classList.add('hidden');
+    });
+
+    saveNcBtn.addEventListener('click', () => {
+      const name = document.getElementById('nc-name').value.trim();
+      const email = document.getElementById('nc-email').value.trim();
+      const address = document.getElementById('nc-address').value.trim();
+
+      if (!name) {
+        showToast('Please enter client name');
+        return;
+      }
+
+      AppState.clients.push({ id: 'c_' + Date.now(), name, email, address });
+      document.getElementById('nc-name').value = '';
+      document.getElementById('nc-email').value = '';
+      document.getElementById('nc-address').value = '';
+      newClientFormCard.classList.add('hidden');
+
+      renderClientsView();
+      populateClientQuickSelect();
+      showToast(`Saved client: ${name}`);
+      saveState();
+    });
+
+    // Backup & Restore (Data Sovereignty)
+    document.getElementById('export-json-btn').addEventListener('click', () => {
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(AppState, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute('href', dataStr);
+      a.setAttribute('download', `quickinvoice-backup-${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('Backup downloaded');
+    });
+
+    document.getElementById('import-json-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            if (data && Array.isArray(data.invoices) && Array.isArray(data.clients)) {
+              AppState.invoices = data.invoices;
+              AppState.clients = data.clients;
+              if (data.currentCurrency) AppState.currentCurrency = data.currentCurrency;
+              if (data.isPro !== undefined) applyProStatus(data.isPro);
+              AppState.activeInvoiceId = data.invoices[0].id;
+              loadActiveInvoiceIntoEditor();
+              showToast('Backup successfully restored');
+              saveState();
+            } else {
+              showToast('Invalid backup file format');
+            }
+          } catch (err) {
+            showToast('Failed to parse JSON backup');
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    // Auto-Save Application State
+    function saveState() {
+      try {
+        const inv = getActiveInvoice();
+        inv.sellerName = sellerName.value;
+        inv.sellerEmail = sellerEmail.value;
+        inv.sellerAddress = sellerAddress.value;
+        inv.clientName = clientName.value;
+        inv.clientEmail = clientEmail.value;
+        inv.clientAddress = clientAddress.value;
+        inv.number = invoiceNumber.value;
+        inv.issueDate = invoiceDate.value;
+        inv.dueDate = invoiceDueDate.value;
+        inv.paymentTerms = paymentTerms.value;
+        inv.bankDetails = bankDetails.value;
+        inv.payHandle = payHandleInput.value;
+        inv.status = invoiceStatus.value;
+
+        localStorage.setItem('quick_invoice_studio_db', JSON.stringify(AppState));
+      } catch (e) {
+        // Safe sandbox fallback
+      }
+    }
+
+    // Load Saved State from LocalStorage
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem('quick_invoice_studio_db');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed.invoices) && parsed.invoices.length > 0) {
+            AppState.invoices = parsed.invoices;
+            AppState.activeInvoiceId = parsed.activeInvoiceId || parsed.invoices[0].id;
+          }
+          if (Array.isArray(parsed.clients) && parsed.clients.length > 0) {
+            AppState.clients = parsed.clients;
+          }
+          if (parsed.currentCurrency && CURRENCIES[parsed.currentCurrency]) {
+            AppState.currentCurrency = parsed.currentCurrency;
+            currencySelect.value = parsed.currentCurrency;
+          }
+          if (parsed.isPro) {
+            applyProStatus(true);
+          }
+        }
+      } catch (e) {
+        // Safe fallback
+      }
+    }
+
+    // Global Live Text Input Sync
+    [sellerName, sellerEmail, sellerAddress, clientName, clientEmail, clientAddress, invoiceNumber, invoiceDate, invoiceDueDate, paymentTerms, bankDetails].forEach(el => {
+      if (el) el.addEventListener('input', () => {
+        saveState();
+        if (el === sellerName || el === invoiceNumber) updateDynamicQRCode();
+      });
+    });
+
+    // PWA Manifest and Install Engine
+    const installPwaBtn = document.getElementById('install-pwa-btn');
+    const installPwaText = document.getElementById('install-pwa-text');
+    let deferredInstallPrompt = null;
+
+    // Dynamically inject self-contained Web App Manifest
+    function initPwaManifest() {
+      try {
+        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="128" fill="%2309090b"/><text x="50%" y="54%" font-family="monospace" font-size="240" font-weight="bold" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle">QI</text></svg>`;
+        const iconDataUrl = 'data:image/svg+xml,' + encodeURIComponent(svgIcon);
+
+        const manifestData = {
+          name: "QuickInvoice Studio",
+          short_name: "QuickInvoice",
+          start_url: ".",
+          display: "standalone",
+          background_color: "#ffffff",
+          theme_color: "#09090b",
+          description: "Minimalist Invoicing System & Live UPI QR Payment Generator",
+          icons: [
+            {
+              src: iconDataUrl,
+              sizes: "192x192 512x512",
+              type: "image/svg+xml",
+              purpose: "any maskable"
+            }
+          ]
+        };
+
+        const blob = new Blob([JSON.stringify(manifestData)], { type: 'application/manifest+json' });
+        const manifestUrl = URL.createObjectURL(blob);
+        document.getElementById('manifest-link').setAttribute('href', manifestUrl);
+      } catch (e) {
+        // Safe fallback
+      }
+    }
+
+    // Listen for Chrome/Edge/Android beforeinstallprompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      installPwaBtn.classList.remove('hidden');
+    });
+
+    installPwaBtn.addEventListener('click', () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            showToast('QuickInvoice installed to your device!');
+            installPwaBtn.classList.add('hidden');
+          }
+          deferredInstallPrompt = null;
+        });
+      } else {
+        // Guidance for iOS Safari or already installed
+        const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIos) {
+          showModal(
+            'Install on iPhone / iPad',
+            'To install on iOS: Tap the Share button (square with up arrow) in Safari, then scroll down and tap "Add to Home Screen".',
+            () => {}
+          );
+        } else {
+          showToast('App is ready! To install, use your browser menu -> "Install App" or "Add to Home Screen"');
+        }
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      installPwaBtn.classList.add('hidden');
+      showToast('QuickInvoice installed as native app!');
+    });
+
+    initPwaManifest();
+
+    // Boot Sequence
+    loadSavedState();
+    loadActiveInvoiceIntoEditor();
+  </script>
+</body>
+</html>
