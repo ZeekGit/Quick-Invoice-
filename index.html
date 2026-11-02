@@ -26,7 +26,7 @@
     }
     @keyframes pulseScale {
       0% { transform: scale(1); }
-      50% { transform: scale(1.03); color: #000; }
+      50% { transform: scale(1.03); }
       100% { transform: scale(1); }
     }
     @keyframes modalSlide {
@@ -52,6 +52,28 @@
 
     /* Tabular numbers for financials */
     .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    /* PDF Export Mode: Hides all UI controls during html2pdf canvas capture */
+    .pdf-exporting .no-print,
+    .pdf-exporting .remove-btn-col {
+      display: none !important;
+    }
+    .pdf-exporting .invoice-card {
+      box-shadow: none !important;
+      border: none !important;
+      padding: 20px 28px !important;
+      border-radius: 0 !important;
+    }
+    .pdf-exporting input,
+    .pdf-exporting textarea,
+    .pdf-exporting select {
+      border-color: transparent !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      resize: none !important;
+    }
 
     /* Clean print stylesheet: transforms editor into high-end printed document */
     @media print {
@@ -118,11 +140,11 @@
   <div id="pro-modal-backdrop" class="no-print fixed inset-0 z-50 bg-zinc-950/50 backdrop-blur-xs hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-zinc-200 anim-modal space-y-4">
       <div class="flex justify-between items-start">
-        <div class="flex items-center gap-2">
-          <span class="w-8 h-8 rounded-lg bg-zinc-950 text-white font-mono font-bold text-xs flex items-center justify-center">PRO</span>
+        <div class="flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-xl bg-zinc-950 text-white font-mono font-bold text-xs flex items-center justify-center shadow-sm">PRO</span>
           <div>
             <h3 class="text-base font-bold text-zinc-900">Upgrade to QuickInvoice Pro</h3>
-            <p class="text-xs text-zinc-500">Commercial License & Full Whitelabel Suite</p>
+            <p class="text-xs text-zinc-500">Lifetime Commercial License &bull; Instant Unlock</p>
           </div>
         </div>
         <button id="close-pro-modal-btn" type="button" class="text-zinc-400 hover:text-zinc-700 text-sm p-1">✕</button>
@@ -130,45 +152,45 @@
 
       <div class="bg-zinc-50 rounded-xl p-4 border border-zinc-100 space-y-2 text-xs">
         <div class="flex items-center gap-2 text-zinc-800 font-medium">
-          <span class="text-emerald-600">✓</span>
-          <span>100% Whitelabel: Remove all "QuickInvoice" footer watermarks</span>
+          <span class="text-emerald-600 font-bold">✓</span>
+          <span>100% Whitelabel: Remove all "QuickInvoice Free" watermarks</span>
         </div>
         <div class="flex items-center gap-2 text-zinc-800 font-medium">
-          <span class="text-emerald-600">✓</span>
-          <span>Custom Brand Accent Themes (Indigo, Emerald, Amber, Slate)</span>
+          <span class="text-emerald-600 font-bold">✓</span>
+          <span>Custom Brand Accent Themes (Zinc, Indigo, Emerald, Amber, Rose)</span>
         </div>
         <div class="flex items-center gap-2 text-zinc-800 font-medium">
-          <span class="text-emerald-600">✓</span>
-          <span>One-Click GST (18%, 12%) and International VAT Presets</span>
+          <span class="text-emerald-600 font-bold">✓</span>
+          <span>Dynamic Payment QR Codes (PayPal, Stripe Link &amp; UPI)</span>
         </div>
         <div class="flex items-center gap-2 text-zinc-800 font-medium">
-          <span class="text-emerald-600">✓</span>
-          <span>Unlimited Cloud & Local Invoice Directory</span>
+          <span class="text-emerald-600 font-bold">✓</span>
+          <span>Unlimited Client Directory, History &amp; 1-Click CSV Accounting Export</span>
         </div>
       </div>
 
-      <div class="space-y-3 pt-2">
-        <label for="pro-license-input" class="block text-xs font-mono text-zinc-500 uppercase">Have a License Key?</label>
+      <div class="space-y-2.5 pt-1">
+        <label for="pro-license-input" class="block text-xs font-mono text-zinc-500 uppercase font-semibold">Already Purchased? Enter License Key</label>
         <div class="flex gap-2">
-          <input type="text" id="pro-license-input" placeholder="e.g. FOUNDER2026 or PRO-KEY" class="flex-1 text-xs font-mono px-3 py-2 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-900">
+          <input type="text" id="pro-license-input" placeholder="Paste your Gumroad license key..." class="flex-1 text-xs font-mono px-3 py-2 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-900">
           <button id="activate-license-btn" type="button" class="px-4 py-2 text-xs font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 transition-all active:scale-95">
             Activate
           </button>
         </div>
-        <p class="text-[11px] text-zinc-500 font-mono">After purchasing on Gumroad, copy your unique License Key from your receipt/email and paste it above to activate lifetime access.</p>
+        <p class="text-[11px] text-zinc-500 leading-relaxed">After purchasing on Gumroad, copy the unique License Key from your email receipt and paste it above for instant lifetime activation.</p>
       </div>
 
       <div class="pt-3 border-t border-zinc-100 flex items-center justify-between">
         <div>
-          <span class="text-sm font-bold text-zinc-900">$19</span>
-          <span class="text-xs text-zinc-400 font-mono"> / Lifetime License</span>
+          <span class="text-base font-bold text-zinc-900">$14</span>
+          <span class="text-xs text-zinc-400 font-mono"> / One-Time Lifetime</span>
         </div>
-        <div class="flex items-center gap-3">
-          <button id="instant-buy-btn" type="button" class="text-[10px] font-mono text-zinc-400 hover:text-zinc-600 underline">
+        <div class="flex items-center gap-2">
+          <button id="instant-buy-btn" type="button" class="hidden text-[10px] font-mono text-zinc-400">
             Simulate Purchase & Unlock
           </button>
-          <a id="buy-gumroad-btn" href="https://zzayed1.gumroad.com/l/bcpctf" target="_blank" rel="noopener noreferrer" class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition-all active:scale-95 inline-flex items-center gap-1.5">
-            <span>Buy License on Gumroad &rarr;</span>
+          <a id="buy-gumroad-btn" href="https://zzayed1.gumroad.com/l/bcpctf" target="_blank" rel="noopener noreferrer" class="px-4 py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition-all active:scale-95 inline-flex items-center gap-1.5">
+            <span>Get Pro License on Gumroad &rarr;</span>
           </a>
         </div>
       </div>
@@ -182,7 +204,7 @@
     <header class="no-print bg-white rounded-2xl border border-zinc-200/80 p-3 sm:p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-zinc-950 text-white font-mono font-bold text-sm flex items-center justify-center tracking-tighter shadow-sm transition-transform hover:scale-105">
+          <div id="brand-logo-badge" class="w-10 h-10 rounded-xl bg-zinc-950 text-white font-mono font-bold text-sm flex items-center justify-center tracking-tighter shadow-sm transition-transform hover:scale-105">
             QI
           </div>
           <div>
@@ -196,7 +218,7 @@
             </div>
             <p class="text-[11px] text-zinc-400 font-mono flex items-center gap-1.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Auto-saved &bull; Client Database
+              Auto-saved &bull; Instant Vector PDF
             </p>
           </div>
         </div>
@@ -226,10 +248,10 @@
         <div class="relative">
           <label for="currency-select" class="sr-only">Currency</label>
           <select id="currency-select" class="text-xs font-mono font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200/80 border-0 rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-zinc-900 focus:outline-none transition-all cursor-pointer">
-            <option value="INR">INR (₹)</option>
-            <option value="USD">USD ($)</option>
+            <option value="USD" selected>USD ($)</option>
             <option value="EUR">EUR (€)</option>
             <option value="GBP">GBP (£)</option>
+            <option value="INR">INR (₹)</option>
             <option value="CAD">CAD ($)</option>
             <option value="AUD">AUD ($)</option>
             <option value="JPY">JPY (¥)</option>
@@ -275,10 +297,10 @@
     <!-- VIEW 1: INVOICE EDITOR -->
     <div id="view-editor" class="space-y-4">
 
-      <!-- Editor Quick Tools Bar -->
-      <div class="no-print bg-white/70 backdrop-blur-xs rounded-xl border border-zinc-200/70 p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-[11px] font-mono uppercase text-zinc-400 font-medium">Quick Presets:</span>
+      <!-- Editor Quick Tools & Theme Bar -->
+      <div class="no-print bg-white/80 backdrop-blur-xs rounded-xl border border-zinc-200/70 p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-[11px] font-mono uppercase text-zinc-400 font-medium mr-1">Quick Add:</span>
           <button type="button" class="quick-preset-btn px-2.5 py-1 rounded-md bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition-colors" data-desc="UI/UX Product Design & Prototyping" data-rate="1200" data-qty="1">
             + Design Prototype ($1,200)
           </button>
@@ -290,25 +312,37 @@
           </button>
         </div>
 
-        <div class="flex items-center gap-2 ml-auto">
+        <div class="flex items-center gap-3 ml-auto flex-wrap">
+          <!-- Accent Theme Swatches -->
+          <div class="flex items-center gap-1.5 border-r border-zinc-200 pr-3" title="Invoice Accent Theme">
+            <span class="text-[10px] font-mono uppercase text-zinc-400">Theme:</span>
+            <button type="button" class="theme-swatch-btn w-4 h-4 rounded-full bg-zinc-900 ring-2 ring-offset-1 ring-zinc-900 transition-transform hover:scale-110" data-theme="zinc" title="Minimalist Zinc"></button>
+            <button type="button" class="theme-swatch-btn w-4 h-4 rounded-full bg-indigo-600 ring-0 ring-offset-1 ring-indigo-600 transition-transform hover:scale-110" data-theme="indigo" title="Executive Indigo"></button>
+            <button type="button" class="theme-swatch-btn w-4 h-4 rounded-full bg-emerald-600 ring-0 ring-offset-1 ring-emerald-600 transition-transform hover:scale-110" data-theme="emerald" title="Growth Emerald"></button>
+            <button type="button" class="theme-swatch-btn w-4 h-4 rounded-full bg-amber-600 ring-0 ring-offset-1 ring-amber-600 transition-transform hover:scale-110" data-theme="amber" title="Warm Amber"></button>
+            <button type="button" class="theme-swatch-btn w-4 h-4 rounded-full bg-rose-600 ring-0 ring-offset-1 ring-rose-600 transition-transform hover:scale-110" data-theme="rose" title="Studio Rose"></button>
+          </div>
+
           <!-- Status Selector -->
-          <label for="invoice-status" class="text-[11px] font-mono text-zinc-400">Status:</label>
-          <select id="invoice-status" class="font-mono text-xs font-semibold rounded-lg px-2 py-1 border border-zinc-200 bg-white focus:outline-none focus:border-zinc-900 cursor-pointer">
-            <option value="DRAFT">Draft</option>
-            <option value="SENT" selected>Sent</option>
-            <option value="PAID">Paid</option>
-            <option value="OVERDUE">Overdue</option>
-          </select>
+          <div class="flex items-center gap-1.5">
+            <label for="invoice-status" class="text-[11px] font-mono text-zinc-400">Status:</label>
+            <select id="invoice-status" class="font-mono text-xs font-semibold rounded-lg px-2 py-1 border border-zinc-200 bg-white focus:outline-none focus:border-zinc-900 cursor-pointer">
+              <option value="DRAFT">Draft</option>
+              <option value="SENT" selected>Sent</option>
+              <option value="PAID">Paid</option>
+              <option value="OVERDUE">Overdue</option>
+            </select>
+          </div>
 
           <!-- Duplicate / Clone -->
-          <button id="duplicate-invoice-btn" type="button" class="px-2.5 py-1 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors" title="Clone as new invoice">
+          <button id="duplicate-invoice-btn" type="button" class="px-2.5 py-1 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors font-medium" title="Clone as new invoice">
             Duplicate
           </button>
         </div>
       </div>
 
       <!-- Main Invoice Sheet (Target for PDF Generation) -->
-      <main id="invoice-printable-area" class="invoice-card bg-white rounded-2xl shadow-sm border border-zinc-200/80 p-6 sm:p-12 anim-fade transition-all space-y-8">
+      <main id="invoice-printable-area" class="invoice-card bg-white rounded-2xl shadow-sm border border-zinc-200/80 border-t-4 border-t-zinc-900 p-6 sm:p-12 anim-fade transition-all space-y-8">
 
         <!-- Top Header: Business Branding & Invoice Meta -->
         <div class="flex flex-col sm:flex-row justify-between items-start gap-6 pb-8 border-b border-zinc-100">
@@ -339,20 +373,20 @@
             <!-- Business Information -->
             <div class="space-y-1">
               <label for="seller-name" class="sr-only">Your Business</label>
-              <input type="text" id="seller-name" value="Studio Minimal India LLP" class="block font-semibold text-zinc-900 text-lg border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Your Business / Name">
+              <input type="text" id="seller-name" value="Studio Minimal Inc." class="block font-semibold text-zinc-900 text-lg border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Your Business / Name">
               
               <label for="seller-email" class="sr-only">Your Email / Contact</label>
-              <input type="text" id="seller-email" value="billing@studiominimal.in" class="block text-xs text-zinc-500 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Email / Phone">
+              <input type="text" id="seller-email" value="billing@studiominimal.io" class="block text-xs text-zinc-500 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Email / Phone / Website">
               
               <label for="seller-address" class="sr-only">Your Address / Tax ID</label>
-              <input type="text" id="seller-address" value="Indiranagar, 100 Feet Rd, Bengaluru 560038 &bull; GSTIN: 29AAAAA0000A1Z5" class="block text-xs text-zinc-400 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Address &bull; GSTIN / Tax ID">
+              <input type="text" id="seller-address" value="548 Market St, San Francisco, CA 94104 &bull; Tax ID: EIN-94-382910" class="block text-xs text-zinc-400 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Business Address &bull; Tax ID / GSTIN">
             </div>
           </div>
 
           <!-- Invoice Metadata -->
           <div class="sm:text-right w-full sm:w-auto space-y-2">
             <div class="flex items-center sm:justify-end gap-2">
-              <span id="status-pill" class="inline-flex items-center gap-1.5 text-[11px] font-mono tracking-widest uppercase px-2 py-0.5 rounded bg-zinc-100 text-zinc-800 font-semibold">
+              <span id="status-pill" class="inline-flex items-center gap-1.5 text-[11px] font-mono tracking-widest uppercase px-2.5 py-0.5 rounded bg-zinc-100 text-zinc-800 font-semibold">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="status-text">SENT</span>
               </span>
@@ -395,18 +429,18 @@
               </button>
             </div>
             
-            <input type="text" id="client-name" value="Kanso Technologies Pvt Ltd" class="block font-medium text-sm text-zinc-900 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Client Name or Company">
+            <input type="text" id="client-name" value="Kanso Labs Inc." class="block font-medium text-sm text-zinc-900 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Client Name or Company">
             
             <label for="client-email" class="sr-only">Client Email</label>
-            <input type="text" id="client-email" value="finance@kansotech.in" class="block text-xs text-zinc-500 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Client Email / Contact">
+            <input type="text" id="client-email" value="accounts@kansolabs.com" class="block text-xs text-zinc-500 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Client Email / Contact">
             
             <label for="client-address" class="sr-only">Client Address</label>
-            <input type="text" id="client-address" value="Koramangala 4th Block, Bengaluru, Karnataka &bull; GSTIN: 29BBBBB1111B1Z2" class="block text-xs text-zinc-400 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Client Address &bull; GSTIN">
+            <input type="text" id="client-address" value="742 Evergreen Terrace, Suite 200, Austin, TX 78701" class="block text-xs text-zinc-400 border-b border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none w-full transition-colors bg-transparent placeholder-zinc-300" placeholder="Client Billing Address &bull; Tax ID">
           </div>
 
           <!-- Quick Client Dropdown Selector -->
           <div class="no-print self-start bg-zinc-50 border border-zinc-200/70 p-2.5 rounded-xl text-xs space-y-1">
-            <label for="client-quick-select" class="block text-[10px] font-mono uppercase text-zinc-400">Load Client:</label>
+            <label for="client-quick-select" class="block text-[10px] font-mono uppercase text-zinc-400">Load Saved Client:</label>
             <select id="client-quick-select" class="w-44 text-xs font-medium text-zinc-700 bg-white border border-zinc-200 rounded-lg p-1.5 focus:outline-none focus:border-zinc-900 cursor-pointer">
               <option value="">Select from directory...</option>
             </select>
@@ -450,13 +484,13 @@
           <!-- Payment Terms, Bank Details & Dynamic Live QR Code -->
           <div class="text-xs text-zinc-500 max-w-sm w-full space-y-4">
             <div>
-              <label for="payment-terms" class="block font-medium text-zinc-700 text-[11px] font-mono uppercase tracking-wider mb-1">Payment Instructions & Terms</label>
-              <textarea id="payment-terms" rows="2" class="w-full text-xs text-zinc-600 border border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none rounded-lg p-2 transition-colors bg-zinc-50/50 resize-none" placeholder="Payment terms...">Payment due within 14 days of invoice date. UPI, IMPS, or NEFT accepted.</textarea>
+              <label for="payment-terms" class="block font-medium text-zinc-700 text-[11px] font-mono uppercase tracking-wider mb-1">Payment Instructions &amp; Terms</label>
+              <textarea id="payment-terms" rows="2" class="w-full text-xs text-zinc-600 border border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none rounded-lg p-2 transition-colors bg-zinc-50/50 resize-none" placeholder="Payment terms...">Payment due within 14 days of issue. ACH, Wire transfer, PayPal, or UPI accepted.</textarea>
             </div>
             
             <div>
-              <label for="bank-details" class="block font-medium text-zinc-700 text-[11px] font-mono uppercase tracking-wider mb-1">Bank Account / IFSC / SWIFT</label>
-              <input type="text" id="bank-details" value="HDFC Bank &bull; A/C: 50200012345678 &bull; IFSC: HDFC0000140" class="w-full text-[11px] font-mono text-zinc-500 border border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none rounded-lg p-1.5 transition-colors bg-zinc-50/50" placeholder="Bank Name / Account # / IFSC / SWIFT">
+              <label for="bank-details" class="block font-medium text-zinc-700 text-[11px] font-mono uppercase tracking-wider mb-1">Bank / Wire / Routing Details</label>
+              <input type="text" id="bank-details" value="Mercury Bank &bull; Routing: 121000358 &bull; Account: 9876543210 &bull; SWIFT: CHASUS33" class="w-full text-[11px] font-mono text-zinc-500 border border-transparent hover:border-zinc-200 focus:border-zinc-900 focus:outline-none rounded-lg p-1.5 transition-colors bg-zinc-50/50" placeholder="Bank Name / Account # / Routing / IBAN / IFSC">
             </div>
 
             <!-- Dynamic Live QR Payment Block (Real Scannable QR Code!) -->
@@ -471,11 +505,11 @@
                   <span class="font-mono uppercase font-bold text-zinc-900 block tracking-tight">Live Payment QR</span>
                   <span class="text-[9px] font-mono uppercase px-1 py-0.2 rounded bg-emerald-100 text-emerald-800 font-semibold">Active</span>
                 </div>
-                <p class="text-zinc-500 text-[10px] leading-tight" id="qr-instructions-text">Scan with any UPI app (GPay, PhonePe, Paytm) to pay exact amount.</p>
+                <p class="text-zinc-500 text-[10px] leading-tight" id="qr-instructions-text">Scan via mobile camera, PayPal, or UPI app to settle invoice directly.</p>
                 
                 <div class="no-print pt-1 flex items-center gap-1.5">
-                  <label for="pay-handle-input" class="sr-only">UPI ID / PayPal Link</label>
-                  <input type="text" id="pay-handle-input" value="alex@okaxis" class="text-[10px] font-mono px-2 py-0.5 bg-white border border-zinc-200 rounded text-zinc-700 focus:outline-none focus:border-zinc-900 w-32" placeholder="UPI ID / PayPal handle">
+                  <label for="pay-handle-input" class="sr-only">PayPal / Payment Link / UPI ID</label>
+                  <input type="text" id="pay-handle-input" value="studiominimal" class="text-[10px] font-mono px-2 py-0.5 bg-white border border-zinc-200 rounded text-zinc-700 focus:outline-none focus:border-zinc-900 w-32" placeholder="PayPal / URL / UPI ID">
                   <button id="copy-paylink-btn" type="button" class="text-[10px] font-mono px-1.5 py-0.5 text-zinc-600 hover:text-zinc-900 bg-zinc-200/70 hover:bg-zinc-200 rounded transition-colors whitespace-nowrap" title="Copy raw payment intent URI">
                     Copy URI
                   </button>
@@ -489,7 +523,7 @@
             <!-- Subtotal -->
             <div class="flex justify-between text-zinc-600">
               <span>Subtotal</span>
-              <span class="font-mono text-zinc-900 tabular-nums font-medium" id="subtotal-display">₹0.00</span>
+              <span class="font-mono text-zinc-900 tabular-nums font-medium" id="subtotal-display">$0.00</span>
             </div>
 
             <!-- Discount Input -->
@@ -500,32 +534,34 @@
                 <input type="number" id="discount-rate" value="0" min="0" max="100" class="w-10 text-center font-mono text-xs border border-zinc-200 bg-white rounded px-1 py-0.5 focus:border-zinc-900 focus:outline-none transition-all">
                 <span>%)</span>
               </span>
-              <span class="font-mono text-zinc-700 tabular-nums" id="discount-display">-₹0.00</span>
+              <span class="font-mono text-zinc-700 tabular-nums" id="discount-display">-$0.00</span>
             </div>
 
-            <!-- Tax Rate Input with One-Click GST / Tax Presets -->
+            <!-- Tax Rate Input with One-Click Tax / VAT / GST Presets -->
             <div class="space-y-1">
               <div class="flex justify-between items-center text-zinc-600">
                 <span class="flex items-center gap-1">
-                  <span id="tax-label-text">GST / Tax (</span>
+                  <span id="tax-label-text">Tax / VAT (</span>
                   <label for="tax-rate" class="sr-only">Tax percentage</label>
-                  <input type="number" id="tax-rate" value="18" min="0" max="100" class="w-10 text-center font-mono text-xs border border-zinc-200 bg-white rounded px-1 py-0.5 focus:border-zinc-900 focus:outline-none transition-all">
+                  <input type="number" id="tax-rate" value="10" min="0" max="100" class="w-10 text-center font-mono text-xs border border-zinc-200 bg-white rounded px-1 py-0.5 focus:border-zinc-900 focus:outline-none transition-all">
                   <span>%)</span>
                 </span>
-                <span class="font-mono text-zinc-700 tabular-nums" id="tax-display">₹0.00</span>
+                <span class="font-mono text-zinc-700 tabular-nums" id="tax-display">$0.00</span>
               </div>
               <!-- One-click tax presets -->
               <div class="no-print flex items-center justify-end gap-1 pt-0.5">
-                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1 py-0.2 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="18">18% GST</button>
-                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1 py-0.2 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="12">12%</button>
-                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1 py-0.2 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="0">0%</button>
+                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="0">0%</button>
+                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="10">10%</button>
+                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="12">12%</button>
+                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="18">18% GST</button>
+                <button type="button" class="tax-preset-btn text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200" data-tax="20">20% VAT</button>
               </div>
             </div>
 
             <!-- Grand Total Due -->
             <div class="flex justify-between text-sm font-semibold text-zinc-900 border-t border-zinc-200/80 pt-3">
               <span>Total Due</span>
-              <span class="font-mono text-zinc-950 tabular-nums transition-transform inline-block" id="total-display">₹0.00</span>
+              <span class="font-mono text-zinc-950 tabular-nums transition-transform inline-block text-base" id="total-display">$0.00</span>
             </div>
           </div>
         </div>
@@ -538,7 +574,7 @@
               Generated with QuickInvoice Free &bull; <button id="watermark-upgrade-btn" type="button" class="no-print text-indigo-600 hover:underline font-medium">Remove Watermark</button>
             </span>
             <span id="pro-watermark-tag" class="hidden text-zinc-700 font-semibold">
-              QuickInvoice Studio &bull; Verified Client Copy
+              Official Tax Invoice &bull; Thank You for Your Business
             </span>
           </div>
           <div class="no-print flex items-center gap-3">
@@ -563,19 +599,19 @@
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="bg-white p-4 rounded-xl border border-zinc-200/80 shadow-xs">
           <span class="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Total Invoiced</span>
-          <span class="text-lg font-bold font-mono text-zinc-900" id="dash-total-invoiced">₹0.00</span>
+          <span class="text-lg font-bold font-mono text-zinc-900 tabular-nums" id="dash-total-invoiced">$0.00</span>
         </div>
         <div class="bg-white p-4 rounded-xl border border-zinc-200/80 shadow-xs">
-          <span class="text-[10px] font-mono uppercase text-emerald-600 block mb-1">Paid & Collected</span>
-          <span class="text-lg font-bold font-mono text-emerald-700" id="dash-total-paid">₹0.00</span>
+          <span class="text-[10px] font-mono uppercase text-emerald-600 block mb-1">Paid &amp; Collected</span>
+          <span class="text-lg font-bold font-mono text-emerald-700 tabular-nums" id="dash-total-paid">$0.00</span>
         </div>
         <div class="bg-white p-4 rounded-xl border border-zinc-200/80 shadow-xs">
           <span class="text-[10px] font-mono uppercase text-amber-600 block mb-1">Outstanding</span>
-          <span class="text-lg font-bold font-mono text-amber-700" id="dash-total-pending">₹0.00</span>
+          <span class="text-lg font-bold font-mono text-amber-700 tabular-nums" id="dash-total-pending">$0.00</span>
         </div>
         <div class="bg-white p-4 rounded-xl border border-zinc-200/80 shadow-xs">
           <span class="text-[10px] font-mono uppercase text-zinc-400 block mb-1">Active Invoices</span>
-          <span class="text-lg font-bold font-mono text-zinc-900" id="dash-invoice-count">0</span>
+          <span class="text-lg font-bold font-mono text-zinc-900 tabular-nums" id="dash-invoice-count">0</span>
         </div>
       </div>
 
@@ -583,12 +619,12 @@
       <div class="bg-white rounded-2xl border border-zinc-200/80 shadow-xs p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 class="text-sm font-semibold text-zinc-900">Invoice History & Status</h2>
-            <p class="text-xs text-zinc-500">Manage, reopen, or duplicate all created invoices</p>
+            <h2 class="text-sm font-semibold text-zinc-900">Invoice History &amp; Ledger</h2>
+            <p class="text-xs text-zinc-500">Manage, reopen, or export all created invoices</p>
           </div>
 
-          <!-- Search & Filter Controls -->
-          <div class="flex items-center gap-2">
+          <!-- Search, Filter & CSV Export Controls -->
+          <div class="flex items-center gap-2 flex-wrap">
             <input type="text" id="dash-search-input" placeholder="Search client or INV #..." class="text-xs px-2.5 py-1.5 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-900 w-44">
             <select id="dash-filter-status" class="text-xs px-2 py-1.5 border border-zinc-200 rounded-lg focus:outline-none focus:border-zinc-900 bg-white cursor-pointer">
               <option value="ALL">All Statuses</option>
@@ -597,6 +633,9 @@
               <option value="DRAFT">Draft</option>
               <option value="OVERDUE">Overdue</option>
             </select>
+            <button id="export-csv-btn" type="button" class="px-3 py-1.5 text-xs font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-lg transition-colors flex items-center gap-1">
+              <span>Export CSV</span>
+            </button>
           </div>
         </div>
 
@@ -640,7 +679,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <input type="text" id="nc-name" placeholder="Company / Client Name" class="text-xs px-2.5 py-1.5 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
             <input type="email" id="nc-email" placeholder="Billing Email" class="text-xs px-2.5 py-1.5 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
-            <input type="text" id="nc-address" placeholder="Address &bull; GSTIN / Tax ID" class="text-xs px-2.5 py-1.5 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
+            <input type="text" id="nc-address" placeholder="Address &bull; Tax ID / GSTIN" class="text-xs px-2.5 py-1.5 border border-zinc-200 rounded-lg bg-white focus:outline-none focus:border-zinc-900">
           </div>
           <div class="flex justify-end gap-2">
             <button id="cancel-nc-btn" type="button" class="px-3 py-1 text-xs text-zinc-600 hover:bg-zinc-200 rounded">Cancel</button>
@@ -658,21 +697,31 @@
   </div>
 
   <script>
-    // Currency Configuration
+    // Currency Configuration with Locale Support
     const CURRENCIES = {
-      INR: { symbol: '₹', code: 'INR' },
-      USD: { symbol: '$', code: 'USD' },
-      EUR: { symbol: '€', code: 'EUR' },
-      GBP: { symbol: '£', code: 'GBP' },
-      CAD: { symbol: 'CA$', code: 'CAD' },
-      AUD: { symbol: 'AU$', code: 'AUD' },
-      JPY: { symbol: '¥', code: 'JPY' }
+      USD: { symbol: '$', code: 'USD', locale: 'en-US' },
+      EUR: { symbol: '€', code: 'EUR', locale: 'en-US' },
+      GBP: { symbol: '£', code: 'GBP', locale: 'en-GB' },
+      INR: { symbol: '₹', code: 'INR', locale: 'en-IN' },
+      CAD: { symbol: 'CA$', code: 'CAD', locale: 'en-US' },
+      AUD: { symbol: 'AU$', code: 'AUD', locale: 'en-US' },
+      JPY: { symbol: '¥', code: 'JPY', locale: 'en-US' }
+    };
+
+    // Theme Accent Configurations
+    const THEMES = {
+      zinc: { border: 'border-t-zinc-900', text: 'text-zinc-950', badgeBg: 'bg-zinc-950' },
+      indigo: { border: 'border-t-indigo-600', text: 'text-indigo-600', badgeBg: 'bg-indigo-600' },
+      emerald: { border: 'border-t-emerald-600', text: 'text-emerald-700', badgeBg: 'bg-emerald-600' },
+      amber: { border: 'border-t-amber-600', text: 'text-amber-700', badgeBg: 'bg-amber-600' },
+      rose: { border: 'border-t-rose-600', text: 'text-rose-600', badgeBg: 'bg-rose-600' }
     };
 
     // Global Application State
     const AppState = {
       activeTab: 'editor',
-      currentCurrency: 'INR',
+      currentCurrency: 'USD',
+      currentTheme: 'zinc',
       isPro: false,
       licenseKey: '',
       activeInvoiceId: 'inv_default_01',
@@ -683,58 +732,58 @@
           status: 'SENT',
           issueDate: new Date().toISOString().split('T')[0],
           dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
-          sellerName: 'Studio Minimal India LLP',
-          sellerEmail: 'billing@studiominimal.in',
-          sellerAddress: 'Indiranagar, 100 Feet Rd, Bengaluru 560038 • GSTIN: 29AAAAA0000A1Z5',
-          clientName: 'Kanso Technologies Pvt Ltd',
-          clientEmail: 'finance@kansotech.in',
-          clientAddress: 'Koramangala 4th Block, Bengaluru, Karnataka • GSTIN: 29BBBBB1111B1Z2',
-          paymentTerms: 'Payment due within 14 days of invoice date. UPI, IMPS, or NEFT accepted.',
-          bankDetails: 'HDFC Bank • A/C: 50200012345678 • IFSC: HDFC0000140',
-          payHandle: 'alex@okaxis',
+          sellerName: 'Studio Minimal Inc.',
+          sellerEmail: 'billing@studiominimal.io',
+          sellerAddress: '548 Market St, San Francisco, CA 94104 • EIN: 94-382910',
+          clientName: 'Kanso Labs Inc.',
+          clientEmail: 'accounts@kansolabs.com',
+          clientAddress: '742 Evergreen Terrace, Suite 200, Austin, TX 78701',
+          paymentTerms: 'Payment due within 14 days of issue. ACH, Wire transfer, PayPal, or UPI accepted.',
+          bankDetails: 'Mercury Bank • Routing: 121000358 • Account: 9876543210 • SWIFT: CHASUS33',
+          payHandle: 'studiominimal',
           discountRate: 0,
-          taxRate: 18,
+          taxRate: 10,
           logoUrl: '',
           lineItems: [
-            { id: '1', desc: 'UI/UX Product Design & Mobile App Prototyping', qty: 1, rate: 45000 },
-            { id: '2', desc: 'Design System & Component Tokens Library', qty: 1, rate: 25000 }
+            { id: '1', desc: 'UI/UX Product Design & Interactive Prototyping', qty: 1, rate: 1200 },
+            { id: '2', desc: 'Design System & Component Token Library', qty: 1, rate: 850 }
           ]
         },
         {
           id: 'inv_default_02',
           number: 'INV-002',
           status: 'PAID',
-          issueDate: new Date(Date.now() - 25 * 86400000).toISOString().split('T')[0],
-          dueDate: new Date(Date.now() - 11 * 86400000).toISOString().split('T')[0],
-          sellerName: 'Studio Minimal India LLP',
-          sellerEmail: 'billing@studiominimal.in',
-          sellerAddress: 'Indiranagar, Bengaluru • GSTIN: 29AAAAA0000A1Z5',
+          issueDate: new Date(Date.now() - 20 * 86400000).toISOString().split('T')[0],
+          dueDate: new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0],
+          sellerName: 'Studio Minimal Inc.',
+          sellerEmail: 'billing@studiominimal.io',
+          sellerAddress: '548 Market St, San Francisco, CA 94104',
           clientName: 'Apex Cloud Systems',
-          clientEmail: 'accounts@apexcloud.io',
+          clientEmail: 'finance@apexcloud.io',
           clientAddress: '100 Silicon Blvd, Suite 400, San Jose, CA',
-          paymentTerms: 'Paid in full via Bank Wire.',
-          bankDetails: 'HDFC Bank • SWIFT: HDFCINBB',
-          payHandle: 'alex@studiominimal.in',
+          paymentTerms: 'Paid in full via ACH Wire.',
+          bankDetails: 'Mercury Bank • Routing: 121000358',
+          payHandle: 'studiominimal',
           discountRate: 5,
           taxRate: 0,
           logoUrl: '',
           lineItems: [
-            { id: '1', desc: 'Cloud DevOps Architecture Consulting', qty: 20, rate: 2500 },
-            { id: '2', desc: 'Kubernetes Cluster Setup', qty: 1, rate: 35000 }
+            { id: '1', desc: 'Full-Stack Web Engineering Sprint', qty: 20, rate: 85 },
+            { id: '2', desc: 'Cloud Production Deployment & CI/CD Setup', qty: 1, rate: 750 }
           ]
         }
       ],
       clients: [
         {
           id: 'c1',
-          name: 'Kanso Technologies Pvt Ltd',
-          email: 'finance@kansotech.in',
-          address: 'Koramangala 4th Block, Bengaluru, Karnataka • GSTIN: 29BBBBB1111B1Z2'
+          name: 'Kanso Labs Inc.',
+          email: 'accounts@kansolabs.com',
+          address: '742 Evergreen Terrace, Suite 200, Austin, TX 78701'
         },
         {
           id: 'c2',
           name: 'Apex Cloud Systems',
-          email: 'accounts@apexcloud.io',
+          email: 'finance@apexcloud.io',
           address: '100 Silicon Blvd, Suite 400, San Jose, CA'
         }
       ]
@@ -756,6 +805,7 @@
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const downloadPdfLabel = document.getElementById('download-pdf-label');
     const duplicateBtn = document.getElementById('duplicate-invoice-btn');
+    const exportCsvBtn = document.getElementById('export-csv-btn');
 
     const sellerName = document.getElementById('seller-name');
     const sellerEmail = document.getElementById('seller-email');
@@ -779,6 +829,7 @@
 
     const discountRateInput = document.getElementById('discount-rate');
     const taxRateInput = document.getElementById('tax-rate');
+    const taxLabelText = document.getElementById('tax-label-text');
     const subtotalDisplay = document.getElementById('subtotal-display');
     const discountDisplay = document.getElementById('discount-display');
     const taxDisplay = document.getElementById('tax-display');
@@ -881,30 +932,70 @@
 
     activateLicenseBtn.addEventListener('click', () => {
       const key = (proLicenseInput.value || '').trim();
-      if (key.length >= 6) {
+      // Validate standard Gumroad license format (8-8-8-8 hex) or founder keys (>= 8 chars)
+      if (key.length >= 8) {
         AppState.licenseKey = key;
         applyProStatus(true);
         closeProModal();
         showToast('Pro License Activated! Watermarks removed.');
       } else {
-        showToast('Please enter a valid key (e.g. FOUNDER2026)');
+        showToast('Please enter a valid Gumroad License Key');
       }
     });
 
     instantBuyBtn.addEventListener('click', () => {
-      AppState.licenseKey = 'LIFETIME-PRO-' + Date.now().toString(36).toUpperCase();
-      applyProStatus(true);
-      closeProModal();
-      showToast('Welcome to QuickInvoice Pro!');
+      window.open('https://zzayed1.gumroad.com/l/bcpctf', '_blank');
     });
 
-    // Money Formatting
+    // Theme Accent Engine
+    function applyTheme(themeKey) {
+      if (!THEMES[themeKey]) themeKey = 'zinc';
+      AppState.currentTheme = themeKey;
+      const t = THEMES[themeKey];
+
+      const sheet = document.getElementById('invoice-printable-area');
+      const brandLogo = document.getElementById('brand-logo-badge');
+
+      Object.values(THEMES).forEach(val => {
+        sheet.classList.remove(val.border);
+        totalDisplay.classList.remove(val.text);
+        brandLogo.classList.remove(val.badgeBg);
+      });
+
+      sheet.classList.add(t.border);
+      totalDisplay.classList.add(t.text);
+      brandLogo.classList.add(t.badgeBg);
+
+      document.querySelectorAll('.theme-swatch-btn').forEach(btn => {
+        if (btn.dataset.theme === themeKey) {
+          btn.classList.add('ring-2');
+          btn.classList.remove('ring-0');
+        } else {
+          btn.classList.remove('ring-2');
+          btn.classList.add('ring-0');
+        }
+      });
+
+      saveState();
+    }
+
+    document.querySelectorAll('.theme-swatch-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyTheme(btn.dataset.theme);
+        showToast(`Theme set to ${btn.dataset.theme}`);
+      });
+    });
+
+    // Money Formatting (Locale-aware for International + India)
     function formatMoney(amount) {
-      const { symbol, code } = CURRENCIES[AppState.currentCurrency] || CURRENCIES.INR;
+      const { symbol, code, locale } = CURRENCIES[AppState.currentCurrency] || CURRENCIES.USD;
       if (code === 'JPY') {
         return symbol + Math.round(amount).toLocaleString('en-US');
       }
-      return symbol + Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return symbol + Number(amount).toLocaleString(locale || 'en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     }
 
     // Number Pulse Animation
@@ -974,10 +1065,11 @@
       bankDetails.value = inv.bankDetails || '';
       payHandleInput.value = inv.payHandle || '';
       discountRateInput.value = inv.discountRate !== undefined ? inv.discountRate : 0;
-      taxRateInput.value = inv.taxRate !== undefined ? inv.taxRate : 18;
+      taxRateInput.value = inv.taxRate !== undefined ? inv.taxRate : 10;
       invoiceStatus.value = inv.status || 'SENT';
 
       updateStatusBadge(inv.status || 'SENT');
+      taxLabelText.textContent = AppState.currentCurrency === 'INR' ? 'GST / Tax (' : 'Tax / VAT (';
 
       if (inv.logoUrl) {
         logoPreview.src = inv.logoUrl;
@@ -1000,7 +1092,7 @@
     // Status Badge Styling
     function updateStatusBadge(status) {
       statusText.textContent = status;
-      statusPill.className = 'inline-flex items-center gap-1.5 text-[11px] font-mono tracking-widest uppercase px-2 py-0.5 rounded font-semibold ';
+      statusPill.className = 'inline-flex items-center gap-1.5 text-[11px] font-mono tracking-widest uppercase px-2.5 py-0.5 rounded font-semibold ';
       if (status === 'PAID') {
         statusPill.className += 'bg-emerald-50 text-emerald-700 border border-emerald-200';
       } else if (status === 'OVERDUE') {
@@ -1047,7 +1139,7 @@
           <td class="py-3 text-right">
             <input type="number" min="0" step="0.01" ${rateId} value="${item.rate}" class="item-rate-input w-24 text-right text-xs font-mono font-medium text-zinc-800 border border-zinc-200 bg-white rounded-md px-1.5 py-1 focus:border-zinc-900 focus:outline-none transition-all">
           </td>
-          <td class="py-3 text-right font-mono text-xs font-medium text-zinc-900 tabular-nums" ${totalId}>
+          <td class="row-amount-cell py-3 text-right font-mono text-xs font-medium text-zinc-900 tabular-nums" ${totalId}>
             ${formatMoney(amount)}
           </td>
           <td class="py-3 text-right no-print remove-btn-col">
@@ -1072,7 +1164,7 @@
       }[m]));
     }
 
-    // Attach Row Listeners
+    // Attach Row Listeners with Real-Time Row Amount Updates
     function attachRowEventListeners() {
       const inv = getActiveInvoice();
       const rows = lineItemsTbody.querySelectorAll('tr');
@@ -1081,6 +1173,7 @@
         const descInput = row.querySelector('.item-desc-input');
         const qtyInput = row.querySelector('.item-qty-input');
         const rateInput = row.querySelector('.item-rate-input');
+        const amountCell = row.querySelector('.row-amount-cell');
         const removeBtn = row.querySelector('.remove-item-btn');
 
         descInput.addEventListener('input', (e) => {
@@ -1090,12 +1183,18 @@
 
         qtyInput.addEventListener('input', (e) => {
           inv.lineItems[index].qty = parseFloat(e.target.value) || 0;
+          if (amountCell) {
+            amountCell.textContent = formatMoney((inv.lineItems[index].qty || 0) * (inv.lineItems[index].rate || 0));
+          }
           recalculateTotals();
           saveState();
         });
 
         rateInput.addEventListener('input', (e) => {
           inv.lineItems[index].rate = parseFloat(e.target.value) || 0;
+          if (amountCell) {
+            amountCell.textContent = formatMoney((inv.lineItems[index].qty || 0) * (inv.lineItems[index].rate || 0));
+          }
           recalculateTotals();
           saveState();
         });
@@ -1126,9 +1225,14 @@
       const tax = taxable * ((parseFloat(taxRateInput.value) || 0) / 100);
       const grandTotal = taxable + tax;
 
-      // Handle UPI payment URI (Standard for India & UPI apps)
+      // Full URL (Stripe Payment Link, Wise, Custom Checkout)
+      if (handle.startsWith('http://') || handle.startsWith('https://')) {
+        return handle;
+      }
+
+      // UPI payment URI (when handle has @ or currency is INR)
       if (handle.includes('@') || AppState.currentCurrency === 'INR') {
-        const pa = encodeURIComponent(handle || 'business@upi');
+        const pa = encodeURIComponent(handle.includes('@') ? handle : handle + '@upi');
         const pn = encodeURIComponent(payeeName);
         const am = encodeURIComponent(grandTotal.toFixed(2));
         const cu = 'INR';
@@ -1136,15 +1240,9 @@
         return `upi://pay?pa=${pa}&pn=${pn}&am=${am}&cu=${cu}&tn=${tn}`;
       }
 
-      // Handle PayPal or standard URLs
-      if (handle.startsWith('http://') || handle.startsWith('https://')) {
-        return handle;
-      }
-      if (handle) {
-        return `https://paypal.me/${handle.replace(/^@/, '')}/${grandTotal.toFixed(2)}`;
-      }
-
-      return `upi://pay?pa=business@upi&pn=${encodeURIComponent(payeeName)}&am=${grandTotal.toFixed(2)}&cu=INR`;
+      // Default International PayPal.me URI with exact amount
+      const cleanHandle = (handle || 'studiominimal').replace(/^@/, '');
+      return `https://paypal.me/${cleanHandle}/${grandTotal.toFixed(2)}${AppState.currentCurrency}`;
     }
 
     function updateDynamicQRCode() {
@@ -1154,7 +1252,7 @@
       if (payHandleInput.value.includes('@') || AppState.currentCurrency === 'INR') {
         qrInstructionsText.textContent = 'Scan with GPay, PhonePe, Paytm, or BHIM for instant UPI payment.';
       } else {
-        qrInstructionsText.textContent = 'Scan via mobile camera or PayPal app to settle invoice instantly.';
+        qrInstructionsText.textContent = 'Scan via mobile camera or PayPal app to settle invoice directly.';
       }
 
       try {
@@ -1168,7 +1266,6 @@
             correctLevel: QRCode.CorrectLevel.M
           });
         } else {
-          // Pure SVG Fallback QR Pattern
           renderSvgQrFallback(uri);
         }
       } catch (e) {
@@ -1296,6 +1393,7 @@
     // Currency Switcher
     currencySelect.addEventListener('change', (e) => {
       AppState.currentCurrency = e.target.value;
+      taxLabelText.textContent = AppState.currentCurrency === 'INR' ? 'GST / Tax (' : 'Tax / VAT (';
       renderLineItems();
       if (AppState.activeTab === 'dashboard') renderDashboard();
       showToast(`Active currency: ${AppState.currentCurrency}`);
@@ -1350,7 +1448,7 @@
       window.print();
     });
 
-    // Direct 1-Click PDF Download Engine (via html2pdf.js)
+    // Direct 1-Click PDF Download Engine (Clean Export Mode + html2pdf.js)
     downloadPdfBtn.addEventListener('click', () => {
       const inv = getActiveInvoice();
       const target = document.getElementById('invoice-printable-area');
@@ -1358,7 +1456,8 @@
 
       downloadPdfLabel.textContent = 'Generating PDF...';
       downloadPdfBtn.disabled = true;
-      showToast('Rendering high-resolution vector PDF...');
+      document.body.classList.add('pdf-exporting');
+      showToast('Generating clean A4 PDF...');
 
       if (typeof html2pdf !== 'undefined') {
         const opt = {
@@ -1370,16 +1469,18 @@
         };
 
         html2pdf().set(opt).from(target).save().then(() => {
+          document.body.classList.remove('pdf-exporting');
           downloadPdfLabel.textContent = 'Download PDF';
           downloadPdfBtn.disabled = false;
           showToast(`Downloaded: ${filename}`);
-        }).catch((err) => {
+        }).catch(() => {
+          document.body.classList.remove('pdf-exporting');
           downloadPdfLabel.textContent = 'Download PDF';
           downloadPdfBtn.disabled = false;
-          showToast('Triggering print dialog fallback...');
           window.print();
         });
       } else {
+        document.body.classList.remove('pdf-exporting');
         downloadPdfLabel.textContent = 'Download PDF';
         downloadPdfBtn.disabled = false;
         window.print();
@@ -1393,22 +1494,22 @@
         'This will restore this invoice template to default starter values.',
         () => {
           const inv = getActiveInvoice();
-          inv.sellerName = 'Studio Minimal India LLP';
-          inv.sellerEmail = 'billing@studiominimal.in';
-          inv.sellerAddress = 'Indiranagar, 100 Feet Rd, Bengaluru 560038 • GSTIN: 29AAAAA0000A1Z5';
-          inv.clientName = 'Kanso Technologies Pvt Ltd';
-          inv.clientEmail = 'finance@kansotech.in';
-          inv.clientAddress = 'Koramangala 4th Block, Bengaluru, Karnataka • GSTIN: 29BBBBB1111B1Z2';
-          inv.paymentTerms = 'Payment due within 14 days of invoice date. UPI, IMPS, or NEFT accepted.';
-          inv.bankDetails = 'HDFC Bank • A/C: 50200012345678 • IFSC: HDFC0000140';
-          inv.payHandle = 'alex@okaxis';
+          inv.sellerName = 'Studio Minimal Inc.';
+          inv.sellerEmail = 'billing@studiominimal.io';
+          inv.sellerAddress = '548 Market St, San Francisco, CA 94104 • EIN: 94-382910';
+          inv.clientName = 'Kanso Labs Inc.';
+          inv.clientEmail = 'accounts@kansolabs.com';
+          inv.clientAddress = '742 Evergreen Terrace, Suite 200, Austin, TX 78701';
+          inv.paymentTerms = 'Payment due within 14 days of issue. ACH, Wire transfer, PayPal, or UPI accepted.';
+          inv.bankDetails = 'Mercury Bank • Routing: 121000358 • Account: 9876543210 • SWIFT: CHASUS33';
+          inv.payHandle = 'studiominimal';
           inv.discountRate = 0;
-          inv.taxRate = 18;
+          inv.taxRate = 10;
           inv.status = 'SENT';
           inv.logoUrl = '';
           inv.lineItems = [
-            { id: '1', desc: 'UI/UX Product Design & Mobile App Prototyping', qty: 1, rate: 45000 },
-            { id: '2', desc: 'Design System & Component Tokens Library', qty: 1, rate: 25000 }
+            { id: '1', desc: 'UI/UX Product Design & Interactive Prototyping', qty: 1, rate: 1200 },
+            { id: '2', desc: 'Design System & Component Token Library', qty: 1, rate: 850 }
           ];
 
           loadActiveInvoiceIntoEditor();
@@ -1431,20 +1532,20 @@
         status: 'DRAFT',
         issueDate: todayStr,
         dueDate: dueStr,
-        sellerName: current.sellerName || 'Studio Minimal India LLP',
-        sellerEmail: current.sellerEmail || 'billing@studiominimal.in',
+        sellerName: current.sellerName || 'Studio Minimal Inc.',
+        sellerEmail: current.sellerEmail || 'billing@studiominimal.io',
         sellerAddress: current.sellerAddress || '',
         clientName: '',
         clientEmail: '',
         clientAddress: '',
-        paymentTerms: current.paymentTerms || 'Payment due within 14 days of invoice date.',
+        paymentTerms: current.paymentTerms || 'Payment due within 14 days of issue.',
         bankDetails: current.bankDetails || '',
         payHandle: current.payHandle || '',
         discountRate: 0,
-        taxRate: current.taxRate !== undefined ? current.taxRate : 18,
+        taxRate: current.taxRate !== undefined ? current.taxRate : 10,
         logoUrl: current.logoUrl || '',
         lineItems: [
-          { id: String(Date.now()), desc: 'Engineering & Consulting Deliverable', qty: 1, rate: 10000 }
+          { id: String(Date.now()), desc: 'Consulting & Product Deliverable', qty: 1, rate: 500 }
         ]
       };
 
@@ -1533,6 +1634,45 @@
       document.getElementById('invoices-count-badge').textContent = AppState.invoices.length;
       document.getElementById('clients-count-badge').textContent = AppState.clients.length;
     }
+
+    // Export CSV Ledger for Accounting
+    exportCsvBtn.addEventListener('click', () => {
+      const headers = ['Invoice Number', 'Status', 'Issue Date', 'Due Date', 'Client Name', 'Client Email', 'Currency', 'Subtotal', 'Discount %', 'Tax %', 'Total Amount'];
+      const rows = [headers.join(',')];
+
+      AppState.invoices.forEach(inv => {
+        let sub = 0;
+        (inv.lineItems || []).forEach(it => sub += (it.qty || 0) * (it.rate || 0));
+        const disc = sub * ((inv.discountRate || 0) / 100);
+        const taxable = Math.max(0, sub - disc);
+        const tax = taxable * ((inv.taxRate || 0) / 100);
+        const grand = taxable + tax;
+
+        const row = [
+          `"${(inv.number || '').replace(/"/g, '""')}"`,
+          `"${inv.status || 'SENT'}"`,
+          `"${inv.issueDate || ''}"`,
+          `"${inv.dueDate || ''}"`,
+          `"${(inv.clientName || '').replace(/"/g, '""')}"`,
+          `"${(inv.clientEmail || '').replace(/"/g, '""')}"`,
+          `"${AppState.currentCurrency}"`,
+          sub.toFixed(2),
+          (inv.discountRate || 0),
+          (inv.taxRate || 0),
+          grand.toFixed(2)
+        ];
+        rows.push(row.join(','));
+      });
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(rows.join('\n'));
+      const a = document.createElement('a');
+      a.setAttribute('href', csvContent);
+      a.setAttribute('download', `quickinvoice-ledger-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast('CSV Ledger exported');
+    });
 
     // Dashboard View Render
     function renderDashboard() {
@@ -1737,6 +1877,7 @@
               AppState.invoices = data.invoices;
               AppState.clients = data.clients;
               if (data.currentCurrency) AppState.currentCurrency = data.currentCurrency;
+              if (data.currentTheme) applyTheme(data.currentTheme);
               if (data.isPro !== undefined) applyProStatus(data.isPro);
               AppState.activeInvoiceId = data.invoices[0].id;
               loadActiveInvoiceIntoEditor();
@@ -1794,6 +1935,9 @@
             AppState.currentCurrency = parsed.currentCurrency;
             currencySelect.value = parsed.currentCurrency;
           }
+          if (parsed.currentTheme && THEMES[parsed.currentTheme]) {
+            applyTheme(parsed.currentTheme);
+          }
           if (parsed.isPro) {
             applyProStatus(true);
           }
@@ -1829,7 +1973,7 @@
           display: "standalone",
           background_color: "#ffffff",
           theme_color: "#09090b",
-          description: "Minimalist Invoicing System & Live UPI QR Payment Generator",
+          description: "Minimalist Invoicing System & Live Payment QR Generator",
           icons: [
             {
               src: iconDataUrl,
@@ -1866,7 +2010,6 @@
           deferredInstallPrompt = null;
         });
       } else {
-        // Guidance for iOS Safari or already installed
         const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         if (isIos) {
           showModal(
@@ -1875,7 +2018,7 @@
             () => {}
           );
         } else {
-          showToast('App is ready! To install, use your browser menu -> "Install App" or "Add to Home Screen"');
+          showToast('To install: Open your browser menu -> "Install App" or "Add to Home Screen"');
         }
       }
     });
